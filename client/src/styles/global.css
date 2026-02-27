@@ -1,0 +1,84 @@
+@import "tailwindcss";
+
+/* ===== THEME TÙY CHỈNH - Màu sắc, font, animation ===== */
+@theme {
+    --color-primary: #1e90ff;
+    --color-primary-light: #3aa0ff;
+    --color-primary-dark: #0077cc;
+    --color-cyan: #00bfff;
+    --color-dark: #0d0d0d;
+    --color-dark-light: #1a1a1a;
+    --color-surface: #111;
+    --font-sans: 'Roboto', Arial, sans-serif;
+    --animate-shimmer: shimmer 1.5s infinite;
+    --animate-live-pulse: livePulse 1.5s infinite;
+}
+
+/* ===== BASE STYLES ===== */
+html { scroll-behavior: smooth; }
+
+body {
+    background-color: var(--color-dark);
+    color: #e0e0e0;
+    overflow-x: hidden;
+}
+
+/* ===== SCROLLBAR TÙY CHỈNH ===== */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--color-dark-light); }
+::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #666; }
+
+/* Ẩn scrollbar cho slider / danh sách cuộn ngang */
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+
+/* ===== KEYFRAMES ===== */
+@keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+@keyframes livePulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
+/* === Page Transition === */
+@keyframes transitionEnter {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+@keyframes transitionExit {
+    from { opacity: 1; }
+    to   { opacity: 0; }
+}
+@keyframes logoEnter {
+    0%   { opacity: 0; transform: scale(0.3) rotate(-8deg); }
+    100% { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+@keyframes logoExit {
+    0%   { opacity: 1; transform: scale(1) translateY(0); }
+    100% { opacity: 0; transform: scale(0.6) translateY(-40px); }
+}
+@keyframes loadBar {
+    0%   { width: 0; }
+    100% { width: 100%; }
+}
+
+/* === Cinema Loader (vòng tròn xoay đẹp) === */
+@keyframes cinemaRotate {
+    to { transform: rotate(360deg); }
+}
+@keyframes cinemaDash {
+    0%   { stroke-dasharray: 1, 200; stroke-dashoffset: 0; }
+    50%  { stroke-dasharray: 89, 200; stroke-dashoffset: -35; }
+    100% { stroke-dasharray: 89, 200; stroke-dashoffset: -124; }
+}
+@keyframes cinemaColor {
+    0%, 100% { stroke: var(--color-primary); }
+    50%      { stroke: var(--color-cyan); }
+}
