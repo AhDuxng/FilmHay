@@ -1,28 +1,22 @@
 import { memo } from 'react';
 import { LIVE_CHANNELS } from '../../utils/constants';
+import { SECTION_PADDING } from '../../utils/helpers';
+import SectionHeader from '../common/SectionHeader';
+import HorizontalSlider from '../common/HorizontalSlider';
 
 /**
- * Section truyền hình trực tiếp
- * Data tĩnh (static) vì không có API live TV
+ * Section truyen hinh truc tiep
+ * Data tinh (static) vi khong co API live TV
  */
 const LiveTVSection = memo(function LiveTVSection() {
     return (
-        <section className="px-12 max-lg:px-6 max-md:px-4 mb-10 relative">
-            {/* Header */}
-            <div className="flex items-center justify-between mb-4">
-                <h2 className="text-[22px] max-md:text-lg font-bold text-white pl-3.5 relative">
-                    <span className="absolute left-0 top-0.5 bottom-0.5 w-1 bg-primary rounded-sm" />
-                    Truyền hình trực tiếp
-                </h2>
-                <a href="#" className="text-[13px] text-primary font-medium flex items-center gap-1 hover:gap-2 transition-all cursor-pointer">
-                    Xem thêm →
-                </a>
-            </div>
+        <section className={`${SECTION_PADDING} mb-10 relative`}>
+            <SectionHeader title="Truyền hình trực tiếp" moreLink="#" />
 
-            {/* Danh sách kênh */}
-            <div className="flex gap-3 overflow-x-auto scroll-smooth pb-2.5 scrollbar-hide">
-                {LIVE_CHANNELS.map((channel, index) => (
-                    <div key={index} className="flex-[0_0_180px] rounded-lg overflow-hidden bg-dark-light transition-transform duration-300 cursor-pointer hover:-translate-y-1">
+            {/* Danh sach kenh */}
+            <HorizontalSlider>
+                {LIVE_CHANNELS.map((channel) => (
+                    <div key={channel.name} className="flex-[0_0_180px] rounded-lg overflow-hidden bg-dark-light transition-transform duration-300 cursor-pointer hover:-translate-y-1">
                         {/* Thumbnail */}
                         <div className="relative">
                             <div
@@ -44,7 +38,7 @@ const LiveTVSection = memo(function LiveTVSection() {
                         </div>
                     </div>
                 ))}
-            </div>
+            </HorizontalSlider>
         </section>
     );
 });

@@ -2,8 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 
 /**
- * PageTransition - hiệu ứng logo PhimHay khi chuyển trang
- * Hiện logo với animation scale + fade, sau đó slide out
+ * PageTransition - hieu ung logo khi chuyen trang
+ * Hien logo voi animation scale + fade, sau do slide out
  */
 function PageTransition() {
     const location = useLocation();
@@ -13,23 +13,23 @@ function PageTransition() {
     const timeoutRef = useRef(null);
 
     useEffect(() => {
-        // Bỏ qua lần mount đầu tiên
+        // Bo qua lan mount dau tien
         if (prevPath.current === location.pathname) return;
         prevPath.current = location.pathname;
 
-        // Bắt đầu hiệu ứng chuyển trang
+        // Bat dau hieu ung chuyen trang
         setIsAnimating(true);
         setPhase('enter');
 
-        // Scroll lên đầu trang ngay lập tức
+        // Scroll len dau trang ngay lap tuc
         window.scrollTo({ top: 0, behavior: 'instant' });
 
-        // Sau 600ms → phase exit (logo bay đi)
+        // Sau 600ms -> phase exit (logo bay di)
         timeoutRef.current = setTimeout(() => {
             setPhase('exit');
         }, 600);
 
-        // Sau 1000ms → kết thúc
+        // Sau 1000ms -> ket thuc
         const exitTimeout = setTimeout(() => {
             setIsAnimating(false);
             setPhase('idle');
@@ -50,17 +50,17 @@ function PageTransition() {
                 ${phase === 'exit' ? 'animate-[transitionExit_0.4s_ease-in_forwards]' : ''}
             `}
         >
-            {/* Nền tối mờ */}
+            {/* Nen toi mo */}
             <div className={`absolute inset-0 bg-dark/90 backdrop-blur-sm transition-opacity duration-300
                 ${phase === 'exit' ? 'opacity-0' : 'opacity-100'}
             `} />
 
-            {/* Logo + hiệu ứng tròn phát sáng */}
+            {/* Logo + hieu ung tron phat sang */}
             <div className={`relative z-10 flex flex-col items-center gap-4
                 ${phase === 'enter' ? 'animate-[logoEnter_0.5s_cubic-bezier(0.34,1.56,0.64,1)_forwards]' : ''}
                 ${phase === 'exit' ? 'animate-[logoExit_0.35s_ease-in_forwards]' : ''}
             `}>
-                {/* Vòng tròn phát sáng phía sau */}
+                {/* Vong tron phat sang phia sau */}
                 <div className="absolute w-32 h-32 rounded-full bg-primary/20 animate-ping" />
                 <div className="absolute w-24 h-24 rounded-full bg-primary/30 animate-pulse" />
 
@@ -69,7 +69,7 @@ function PageTransition() {
                     PhimHay
                 </span>
 
-                {/* Thanh loading nhỏ bên dưới */}
+                {/* Thanh loading nho ben duoi */}
                 <div className="w-16 h-0.5 rounded-full bg-white/20 overflow-hidden">
                     <div className="h-full bg-gradient-to-r from-primary to-cyan rounded-full animate-[loadBar_0.6s_ease-out_forwards]" />
                 </div>

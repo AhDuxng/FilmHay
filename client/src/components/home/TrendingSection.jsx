@@ -1,38 +1,32 @@
-import { memo, useState, useRef, useCallback } from 'react';
+import { memo, useState, useMemo } from 'react';
 import MovieCard from '../common/MovieCard';
+import SectionHeader from '../common/SectionHeader';
+import HorizontalSlider from '../common/HorizontalSlider';
 import { CATEGORY_TABS } from '../../utils/constants';
+import { SECTION_PADDING } from '../../utils/helpers';
 
 /**
- * Trending section - có category tabs để lọc
- * group/slider pattern cho mũi tên
+ * Trending section - co category tabs de loc theo quoc gia
+ * Filter client-side tu data home API (khong goi API rieng)
+ * group/slider pattern cho mui ten
  */
 const TrendingSection = memo(function TrendingSection({ movies = [] }) {
     const [activeTab, setActiveTab] = useState('all');
-    const rowRef = useRef(null);
 
-    // Hiện tại chưa có filter theo quốc gia từ API home
-    const filteredMovies = movies;
-
-    const scroll = useCallback((direction) => {
-        if (!rowRef.current) return;
-        const scrollAmount = direction === 'left' ? -600 : 600;
-        rowRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-    }, []);
+    // Loc phim theo quoc gia tu tab dang chon
+    const filteredMovies = useMemo(() => {
+        if (activeTab === 'all') return movies;
+        return movies.filter((movie) => {
+            const countries = movie.country || [];
+            return countries.some((c) => c.slug === activeTab);
+        });
+    }, [movies, activeTab]);
 
     if (!movies || movies.length === 0) return null;
 
     return (
-        <section className="px-12 max-lg:px-6 max-md:px-4 mb-10 relative">
-            {/* Header */}
-            <div className="flex items-center justify-between mb-4">
-                <h2 className="text-[22px] max-md:text-lg font-bold text-white pl-3.5 relative">
-                    <span className="absolute left-0 top-0.5 bottom-0.5 w-1 bg-primary rounded-sm" />
-                    Đang thịnh hành
-                </h2>
-                <a href="#" className="text-[13px] text-primary font-medium flex items-center gap-1 hover:gap-2 transition-all cursor-pointer">
-                    Xem thêm →
-                </a>
-            </div>
+        <section className={`${SECTION_PADDING} mb-10 relative`}>
+            <SectionHeader title="Đang thịnh hành" moreLink="#" />
 
             {/* Category tabs */}
             <div className="flex gap-3 mb-5 overflow-x-auto scrollbar-hide pb-1">
@@ -51,36 +45,16 @@ const TrendingSection = memo(function TrendingSection({ movies = [] }) {
                 ))}
             </div>
 
-            {/* Slider */}
-            <div className="group/slider relative">
-                <div className="flex gap-3 overflow-x-auto scroll-smooth pb-2.5 scrollbar-hide" ref={rowRef}>
-                    {filteredMovies.map((movie) => (
-                        <MovieCard
-                            key={movie._id || movie.slug}
-                            movie={movie}
-                            landscape
-                        />
-                    ))}
-                </div>
-
-                {/* Mũi tên trái */}
-                <div
-                    className="absolute top-0 bottom-2.5 left-[-10px] w-12 z-[5] flex items-center justify-center text-white text-2xl cursor-pointer opacity-0 group-hover/slider:opacity-100 transition-opacity duration-300"
-                    style={{ background: 'linear-gradient(to right, rgba(13,13,13,0.9), transparent)' }}
-                    onClick={() => scroll('left')}
-                >
-                    ❮
-                </div>
-
-                {/* Mũi tên phải */}
-                <div
-                    className="absolute top-0 bottom-2.5 right-[-10px] w-12 z-[5] flex items-center justify-center text-white text-2xl cursor-pointer opacity-0 group-hover/slider:opacity-100 transition-opacity duration-300"
-                    style={{ background: 'linear-gradient(to left, rgba(13,13,13,0.9), transparent)' }}
-                    onClick={() => scroll('right')}
-                >
-                    ❯
-                </div>
-            </div>
+            {/* Slider phim cuon ngang */}
+            <HorizontalSlider>
+                {filteredMovies.map((movie) => (
+                    <MovieCard
+                        key={movie._id || movie.slug}
+                        movie={movie}
+                        landscape
+                    />
+                ))}
+            </HorizontalSlider>
         </section>
     );
 });

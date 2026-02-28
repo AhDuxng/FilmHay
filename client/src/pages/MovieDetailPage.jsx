@@ -1,16 +1,21 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import DOMPurify from 'dompurify';
 import { useMovieDetail } from '../hooks/useMovies';
+import { usePageTitle } from '../hooks/usePageTitle';
 import { getPosterUrl, getThumbUrl } from '../utils/constants';
+import { handleImageError, scrollToTop } from '../utils/helpers';
 import Loading from '../components/common/Loading';
+import ErrorState from '../components/common/ErrorState';
+import PlayIcon from '../components/common/PlayIcon';
 
-// Số tập hiển thị mỗi trang (range tab)
+// So tap hien thi moi trang (range tab)
 const EPISODES_PER_RANGE = 30;
 
 /**
- * Trang chi tiết phim - thiết kế theo kiểu VieON
- * Video player trên cùng, thông tin phim bên dưới, danh sách tập dạng card ngang
- * Sử dụng group/ep pattern cho hiệu ứng hover card tập phim
+ * Trang chi tiet phim - thiet ke kieu VieON
+ * Video player tren cung, thong tin phim ben duoi, danh sach tap card ngang
+ * group/ep pattern hieu ung hover card tap phim
  */
 function MovieDetailPage() {
     const { slug } = useParams();
@@ -26,7 +31,9 @@ function MovieDetailPage() {
         return data?.data?.item || data?.item || data;
     }, [data]);
 
-    // Parse episodes từ tất cả server
+    usePageTitle(movie?.name || 'Chi tiết phim');
+
+    // Parse episodes tu tat ca server
     const episodes = useMemo(() => {
         if (!movie) return [];
         const eps = movie.episodes || [];
@@ -36,19 +43,19 @@ function MovieDetailPage() {
         return [];
     }, [movie]);
 
-    // Scroll lên đầu trang khi vào trang chi tiết phim
+    // Scroll len dau trang khi vao trang chi tiet phim
     useEffect(() => {
-        window.scrollTo({ top: 0, behavior: 'instant' });
+        scrollToTop();
     }, [slug]);
 
-    // Tự động phát tập 1 khi load xong data
+    // Tu dong phat tap 1 khi load xong data
     useEffect(() => {
         if (episodes.length > 0 && activeEpisode === null) {
             setActiveEpisode(0);
         }
     }, [episodes]);
 
-    // Tạo range tabs (01-30, 31-60, ...)
+    // Tao range tabs (01-30, 31-60, ...)
     const episodeRanges = useMemo(() => {
         if (episodes.length <= EPISODES_PER_RANGE) return [];
         const ranges = [];
@@ -64,7 +71,7 @@ function MovieDetailPage() {
         return ranges;
     }, [episodes]);
 
-    // Lấy danh sách tập theo range hiện tại
+    // Lay danh sach tap theo range hien tai
     const visibleEpisodes = useMemo(() => {
         if (episodeRanges.length === 0) return episodes;
         const range = episodeRanges[activeRange];
@@ -72,7 +79,7 @@ function MovieDetailPage() {
         return episodes.slice(range.start, range.end);
     }, [episodes, episodeRanges, activeRange]);
 
-    // Xử lý chọn tập phim
+    // Xu ly chon tap phim
     const handleEpisodeClick = useCallback((globalIndex) => {
         setActiveEpisode(globalIndex);
         if (playerRef.current) {
@@ -80,7 +87,7 @@ function MovieDetailPage() {
         }
     }, []);
 
-    // Chuyển tập tiếp theo
+    // Chuyen tap tiep theo
     const handleNextEpisode = useCallback(() => {
         if (activeEpisode !== null && activeEpisode < episodes.length - 1) {
             const nextIndex = activeEpisode + 1;
@@ -94,14 +101,14 @@ function MovieDetailPage() {
         }
     }, [activeEpisode, episodes.length, episodeRanges, activeRange]);
 
-    // Reset scroll episode list khi đổi range
+    // Reset scroll episode list khi doi range
     useEffect(() => {
         if (episodeScrollRef.current) {
             episodeScrollRef.current.scrollLeft = 0;
         }
     }, [activeRange]);
 
-    // Scroll episode list bằng nút
+    // Scroll episode list bang nut
     const scrollEpisodes = useCallback((direction) => {
         if (episodeScrollRef.current) {
             const scrollAmount = direction === 'left' ? -400 : 400;
@@ -113,16 +120,12 @@ function MovieDetailPage() {
 
     if (error) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-[300px] text-center p-10 mt-20">
-                <h2 className="text-2xl text-white mb-3">Không thể tải phim</h2>
-                <p className="text-neutral-500 mb-6">{error}</p>
-                <button
-                    onClick={refetch}
-                    className="px-7 py-2.5 bg-primary text-white text-sm font-semibold rounded hover:bg-primary-light transition-colors"
-                >
-                    Thử lại
-                </button>
-            </div>
+            <ErrorState
+                title="Không thể tải phim"
+                message={error}
+                onRetry={refetch}
+                hasTopPadding
+            />
         );
     }
 
@@ -142,16 +145,24 @@ function MovieDetailPage() {
             <div className="relative w-full bg-black">
                 {isPlaying ? (
                     <div className="relative w-full aspect-video max-h-[80vh] bg-black">
-                        <iframe
-                            className="absolute top-0 left-0 w-full h-full border-none"
-                            src={episodes[activeEpisode].link_embed}
-                            width="100%"
-                            height="100%"
-                            frameBorder="0"
-                            allowFullScreen
-                            allow="autoplay; encrypted-media"
-                            title={`Tập ${activeEpisode + 1}`}
-                        />
+                        {/^https:\/\//.test(episodes[activeEpisode].link_embed) ? (
+                            <iframe
+                                className="absolute top-0 left-0 w-full h-full border-none"
+                                src={episodes[activeEpisode].link_embed}
+                                width="100%"
+                                height="100%"
+                                frameBorder="0"
+                                sandbox="allow-scripts allow-same-origin allow-fullscreen"
+                                allowFullScreen
+                                allow="autoplay; encrypted-media"
+                                referrerPolicy="no-referrer"
+                                title={`Tập ${activeEpisode + 1}`}
+                            />
+                        ) : (
+                            <div className="absolute inset-0 flex items-center justify-center text-neutral-400 text-sm">
+                                Nguồn phát không hợp lệ
+                            </div>
+                        )}
                     </div>
                 ) : (
                     <div className="relative w-full h-[60vh] min-h-[400px] max-md:h-[45vh] max-md:min-h-[250px] overflow-hidden">
@@ -170,18 +181,16 @@ function MovieDetailPage() {
                                 onClick={() => handleEpisodeClick(0)}
                                 aria-label="Xem phim"
                             >
-                                <svg viewBox="0 0 24 24" fill="currentColor" width="48" height="48">
-                                    <path d="M8 5v14l11-7z" />
-                                </svg>
+                                <PlayIcon className="w-12 h-12 fill-current" />
                             </button>
                         )}
                     </div>
                 )}
             </div>
 
-            {/* ===== THÔNG TIN PHIM DƯỚI PLAYER ===== */}
+            {/* ===== THONG TIN PHIM DUOI PLAYER ===== */}
             <div className="px-12 max-lg:px-6 max-md:px-4 pt-6 pb-10 max-md:pb-8 max-w-[1400px] mx-auto">
-                {/* Tiêu đề + meta + actions */}
+                {/* Tieu de + meta + actions */}
                 <div className="flex max-md:flex-col justify-between items-start gap-6 max-md:gap-4 mb-5">
                     <div className="flex-1">
                         {isPlaying && (
@@ -198,7 +207,7 @@ function MovieDetailPage() {
                             <p className="text-base text-neutral-500 mb-3">{movie.origin_name}</p>
                         )}
 
-                        {/* Lượt xem */}
+                        {/* Luot xem */}
                         <div className="flex items-center gap-4 mb-3 text-sm text-neutral-400">
                             {movie.view && (
                                 <span className="text-neutral-300">
@@ -256,7 +265,7 @@ function MovieDetailPage() {
                     </div>
                 </div>
 
-                {/* Diễn viên, đạo diễn, thể loại */}
+                {/* Dien vien, dao dien, the loai */}
                 <div className="mb-5 border-t border-white/[0.08] pt-4">
                     {actors.length > 0 && (
                         <p className="text-sm text-neutral-400 mb-2 leading-relaxed">
@@ -285,14 +294,14 @@ function MovieDetailPage() {
                     )}
                 </div>
 
-                {/* Mô tả phim */}
+                {/* Mo ta phim */}
                 {movie.content && (
                     <div className="text-[15px] text-neutral-400 leading-[1.8] mb-8 py-4 border-t border-white/[0.08]">
-                        <div dangerouslySetInnerHTML={{ __html: movie.content }} />
+                        <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(movie.content) }} />
                     </div>
                 )}
 
-                {/* ===== DANH SÁCH TẬP - KIỂU VieON ===== */}
+                {/* ===== DANH SACH TAP - KIEU VieON ===== */}
                 {episodes.length > 0 && (
                     <div className="mt-2 border-t border-white/[0.08] pt-6">
                         <div className="flex max-md:flex-col items-center max-md:items-start gap-6 max-md:gap-3 mb-5 flex-wrap">
@@ -325,7 +334,7 @@ function MovieDetailPage() {
 
                         {/* Episode cards - scroll ngang */}
                         <div className="relative">
-                            {/* Nút cuộn trái */}
+                            {/* Nut cuon trai */}
                             <button
                                 className="absolute top-1/2 -translate-y-1/2 left-[-4px] z-[5] w-10 h-20 border-none bg-black/70 text-white text-[28px] cursor-pointer flex items-center justify-center rounded transition-colors hover:bg-primary/80 max-md:hidden"
                                 onClick={() => scrollEpisodes('left')}
@@ -352,7 +361,7 @@ function MovieDetailPage() {
                                                 }`}
                                             onClick={() => handleEpisodeClick(globalIndex)}
                                         >
-                                            {/* Thumbnail tập */}
+                                            {/* Thumbnail tap */}
                                             <div className="relative w-full aspect-video overflow-hidden bg-surface">
                                                 {thumbUrl ? (
                                                     <img
@@ -369,9 +378,7 @@ function MovieDetailPage() {
                                                 )}
                                                 {/* Play icon overlay */}
                                                 <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover/ep:opacity-100 transition-opacity duration-300">
-                                                    <svg className="drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]" viewBox="0 0 24 24" fill="currentColor" width="32" height="32">
-                                                        <path d="M8 5v14l11-7z" />
-                                                    </svg>
+                                                    <PlayIcon className="w-8 h-8 fill-current drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]" />
                                                 </div>
                                                 {isActive && (
                                                     <div className="absolute bottom-1.5 left-1.5 px-2 py-0.5 bg-primary text-white text-[11px] font-semibold rounded">
@@ -380,7 +387,7 @@ function MovieDetailPage() {
                                                 )}
                                             </div>
 
-                                            {/* Info tập */}
+                                            {/* Info tap */}
                                             <div className="px-3 py-2.5">
                                                 <p className="text-sm font-semibold text-neutral-200 mb-1.5 truncate">
                                                     Tập {ep.name || globalIndex + 1}
@@ -406,7 +413,7 @@ function MovieDetailPage() {
                                 })}
                             </div>
 
-                            {/* Nút cuộn phải */}
+                            {/* Nut cuon phai */}
                             <button
                                 className="absolute top-1/2 -translate-y-1/2 right-[-4px] z-[5] w-10 h-20 border-none bg-black/70 text-white text-[28px] cursor-pointer flex items-center justify-center rounded transition-colors hover:bg-primary/80 max-md:hidden"
                                 onClick={() => scrollEpisodes('right')}
@@ -418,7 +425,7 @@ function MovieDetailPage() {
                     </div>
                 )}
 
-                {/* Tập tiếp theo */}
+                {/* Tap tiep theo */}
                 {isPlaying && activeEpisode < episodes.length - 1 && (
                     <button
                         className="mt-5 px-7 py-3 bg-primary text-white border-none rounded-lg text-[15px] font-semibold cursor-pointer transition-all hover:bg-[#1a7de0] hover:-translate-y-0.5 hover:shadow-[0_4px_16px_rgba(30,144,255,0.4)]"

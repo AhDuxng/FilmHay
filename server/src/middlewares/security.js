@@ -8,13 +8,13 @@ const helmetMiddleware = helmet({
     contentSecurityPolicy: config.isProduction ? undefined : false,
 });
 
-// CORS - chi cho phep client URL
+// CORS - chi cho phep client URL, chi GET method (read-only API)
 const corsMiddleware = cors({
     origin: config.isProduction
         ? config.cors.origin
         : [config.cors.origin, 'http://localhost:3000', 'http://localhost:5173'],
-    methods: ['GET', 'POST'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    methods: ['GET'],
+    allowedHeaders: ['Content-Type'],
     credentials: true,
     maxAge: 86400, // Pre-flight cache 24h
 });

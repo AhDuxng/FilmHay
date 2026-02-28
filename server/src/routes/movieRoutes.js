@@ -1,6 +1,6 @@
 const { Router } = require('express');
 const movieController = require('../controllers/movieController');
-const { searchLimiter } = require('../middlewares/rateLimiter');
+const { searchLimiter, suggestLimiter } = require('../middlewares/rateLimiter');
 
 const router = Router();
 
@@ -19,6 +19,9 @@ router.get('/detail/:slug', movieController.getMovieDetail);
 
 // Tim kiem - ap dung rate limit nghiem ngat hon
 router.get('/search', searchLimiter, movieController.searchMovies);
+
+// Goi y tim kiem nhanh - rate limit rieng, cho phep nhieu hon
+router.get('/suggest', suggestLimiter, movieController.suggestMovies);
 
 // Danh sách thể loại / quốc gia
 router.get('/genres', movieController.getGenreList);

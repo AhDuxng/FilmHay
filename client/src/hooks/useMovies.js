@@ -4,40 +4,56 @@ import { movieApi } from '../services/api';
 /**
  * Custom hook goi API phim
  * Tu dong xu ly loading, error, data
- * Co ho tro cancel request khi component unmount
+ * Ho tro AbortController cancel request khi unmount / re-fetch
+ * @param {Function} apiMethod - ham goi API
+ * @param {Array} params - tham so truyen vao apiMethod
+ * @param {Array} dependencies - dependency array cho useEffect
+ * @param {boolean} enabled - chi goi API khi true (mac dinh true)
  */
-export function useMovies(apiMethod, params = [], dependencies = []) {
+export function useMovies(apiMethod, params = [], dependencies = [], enabled = true) {
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const mountedRef = useRef(true);
+    const abortRef = useRef(null);
 
     const fetchData = useCallback(async () => {
+        // Huy request truoc do neu con pending
+        if (abortRef.current) {
+            abortRef.current.abort();
+        }
+        const controller = new AbortController();
+        abortRef.current = controller;
+
         try {
             setLoading(true);
             setError(null);
             const response = await apiMethod(...params);
-            if (mountedRef.current) {
+            if (!controller.signal.aborted) {
                 setData(response.data);
             }
         } catch (err) {
-            if (mountedRef.current) {
+            if (!controller.signal.aborted) {
                 setError(err.message || 'Co loi xay ra');
             }
         } finally {
-            if (mountedRef.current) {
+            if (!controller.signal.aborted) {
                 setLoading(false);
             }
         }
     }, dependencies); // eslint-disable-line react-hooks/exhaustive-deps
 
     useEffect(() => {
-        mountedRef.current = true;
+        if (!enabled) {
+            setLoading(false);
+            return;
+        }
         fetchData();
         return () => {
-            mountedRef.current = false;
+            if (abortRef.current) {
+                abortRef.current.abort();
+            }
         };
-    }, [fetchData]);
+    }, [fetchData, enabled]);
 
     const refetch = useCallback(() => {
         fetchData();
@@ -69,8 +85,9 @@ export function useSearchMovies(keyword, page = 1) {
 
 /**
  * Hook lay danh sach phim theo loai
+ * @param {boolean} enabled - chi goi khi route la /danh-sach/
  */
-export function useMovieList(type, page = 1) {
+export function useMovieList(type, page = 1, enabled = true) {
     const apiMap = {
         'phim-moi': movieApi.getNewMovies,
         'phim-bo': movieApi.getSeriesMovies,
@@ -80,5 +97,25 @@ export function useMovieList(type, page = 1) {
     };
 
     const apiMethod = apiMap[type] || movieApi.getNewMovies;
-    return useMovies(apiMethod, [page], [type, page]);
+    return useMovies(apiMethod, [page], [type, page], enabled);
+}
+
+/**
+ * Hook lay phim theo the loai (genre)
+ * @param {string} slug - slug the loai (vd: 'hanh-dong')
+ * @param {number} page
+ * @param {boolean} enabled - chi goi khi route la /the-loai/
+ */
+export function useMoviesByGenre(slug, page = 1, enabled = true) {
+    return useMovies(movieApi.getMoviesByGenre, [slug, page], [slug, page], enabled);
+}
+
+/**
+ * Hook lay phim theo quoc gia (country)
+ * @param {string} slug - slug quoc gia (vd: 'han-quoc')
+ * @param {number} page
+ * @param {boolean} enabled - chi goi khi route la /quoc-gia/
+ */
+export function useMoviesByCountry(slug, page = 1, enabled = true) {
+    return useMovies(movieApi.getMoviesByCountry, [slug, page], [slug, page], enabled);
 }

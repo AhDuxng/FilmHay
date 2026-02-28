@@ -161,6 +161,44 @@ const searchMovies = async (keyword, page = 1) => {
 };
 
 /**
+ * Goi y tim kiem nhanh - tra ve toi da 8 ket qua nhe
+ * Chi lay cac truong can thiet cho dropdown goi y
+ * Cache 2 phut, gioi han do dai keyword
+ * @param {string} keyword
+ */
+const suggestMovies = async (keyword) => {
+    if (!keyword || typeof keyword !== 'string') {
+        return { items: [] };
+    }
+
+    const safeKeyword = keyword.trim().substring(0, 50);
+    if (safeKeyword.length < 1) {
+        return { items: [] };
+    }
+
+    const cacheKey = `suggest_${safeKeyword}`;
+    return getOrSet(cacheKey, async () => {
+        const { data } = await ophimClient.get('/tim-kiem', {
+            params: { keyword: safeKeyword, page: 1 },
+        });
+
+        // Chi lay 8 ket qua dau, giam payload cho dropdown
+        const items = (data?.data?.items || []).slice(0, 8).map((m) => ({
+            name: m.name,
+            slug: m.slug,
+            poster_url: m.poster_url,
+            thumb_url: m.thumb_url,
+            year: m.year,
+            quality: m.quality,
+            episode_current: m.episode_current,
+            origin_name: m.origin_name,
+        }));
+
+        return { items };
+    }, 120_000);
+};
+
+/**
  * Lay phim theo the loai
  * @param {string} genre - slug the loai
  * @param {number} page
@@ -229,6 +267,7 @@ module.exports = {
     getTVShows,
     getMovieDetail,
     searchMovies,
+    suggestMovies,
     getMoviesByGenre,
     getMoviesByCountry,
     getGenreList,

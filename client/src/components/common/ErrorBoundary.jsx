@@ -1,8 +1,8 @@
 import { Component } from 'react';
 
 /**
- * Error Boundary - bắt lỗi render của component con
- * Hiển thị UI fallback thay vì crash toàn bộ app
+ * ErrorBoundary - bat loi render component con
+ * Hien thi UI fallback thay vi crash toan bo app
  */
 class ErrorBoundary extends Component {
     constructor(props) {

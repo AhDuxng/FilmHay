@@ -1,21 +1,24 @@
 import { useMemo } from 'react';
 import { useHomeData } from '../hooks/useMovies';
+import { usePageTitle } from '../hooks/usePageTitle';
 import HeroCarousel from '../components/home/HeroCarousel';
 import TrendingSection from '../components/home/TrendingSection';
 import Top10Section from '../components/home/Top10Section';
 import MovieSection from '../components/home/MovieSection';
-import PromoBanner from '../components/home/PromoBanner';
 import LiveTVSection from '../components/home/LiveTVSection';
 import Loading from '../components/common/Loading';
+import ErrorState from '../components/common/ErrorState';
 
 /**
- * Trang chủ - hiển thị tất cả sections
- * Gọi API /home 1 lần, phân phối data cho các component con
+ * Trang chu - hien thi tat ca section
+ * Goi API /home 1 lan, phan phoi data cho component con
  */
 function HomePage() {
     const { data, loading, error, refetch } = useHomeData();
+    usePageTitle('Trang chủ - Xem phim online miễn phí');
 
-    // Parse data từ ophim API response
+    // Parse data tu ophim API response
+    // Phan chia items thanh cac nhom khong trung lap
     const homeData = useMemo(() => {
         if (!data) return null;
         const innerData = data?.data || data;
@@ -23,13 +26,13 @@ function HomePage() {
 
         return {
             heroMovies: items.slice(0, 5),
-            trendingMovies: items.slice(0, 10),
-            top10Movies: items.slice(5, 15),
-            seriesMovies: items.slice(10, 22),
-            singleMovies: items.slice(15, 27),
-            actionMovies: items.slice(5, 17),
-            romanceMovies: items.slice(12, 24),
-            animeMovies: items.slice(18, 30),
+            trendingMovies: items.slice(0, 12),
+            top10Movies: items.slice(12, 22),
+            seriesMovies: items.slice(22, 34),
+            singleMovies: items.slice(34, 46),
+            actionMovies: items.slice(46, 58),
+            romanceMovies: items.slice(58, 70),
+            animeMovies: items.slice(70, 82),
         };
     }, [data]);
 
@@ -37,16 +40,12 @@ function HomePage() {
 
     if (error) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-[300px] text-center p-10 mt-20">
-                <h2 className="text-2xl text-white mb-3">Không thể tải dữ liệu</h2>
-                <p className="text-neutral-500 mb-6">{error}</p>
-                <button
-                    onClick={refetch}
-                    className="px-7 py-2.5 bg-primary text-white text-sm font-semibold rounded hover:bg-primary-light transition-colors"
-                >
-                    Thử lại
-                </button>
-            </div>
+            <ErrorState
+                title="Không thể tải dữ liệu"
+                message={error}
+                onRetry={refetch}
+                hasTopPadding
+            />
         );
     }
 
@@ -59,7 +58,6 @@ function HomePage() {
             <Top10Section movies={homeData.top10Movies} />
             <MovieSection title="Phim bộ hay nhất" movies={homeData.seriesMovies} moreLink="/danh-sach/phim-bo" />
             <MovieSection title="Phim lẻ đề cử" movies={homeData.singleMovies} moreLink="/danh-sach/phim-le" />
-            <PromoBanner />
             <MovieSection title="Phim hành động" movies={homeData.actionMovies} moreLink="/the-loai/hanh-dong" />
             <MovieSection title="Phim tình cảm, lãng mạn" movies={homeData.romanceMovies} moreLink="/the-loai/tinh-cam" />
             <LiveTVSection />

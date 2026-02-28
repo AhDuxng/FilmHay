@@ -18,35 +18,35 @@ const getHome = asyncHandler(async (req, res) => {
 
 // GET /api/movies/new?page=1
 const getNewMovies = asyncHandler(async (req, res) => {
-    const page = parseInt(req.query.page, 10) || 1;
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
     const data = await movieService.getNewMovies(page);
     res.json({ success: true, data });
 });
 
 // GET /api/movies/series?page=1
 const getSeriesMovies = asyncHandler(async (req, res) => {
-    const page = parseInt(req.query.page, 10) || 1;
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
     const data = await movieService.getSeriesMovies(page);
     res.json({ success: true, data });
 });
 
 // GET /api/movies/single?page=1
 const getSingleMovies = asyncHandler(async (req, res) => {
-    const page = parseInt(req.query.page, 10) || 1;
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
     const data = await movieService.getSingleMovies(page);
     res.json({ success: true, data });
 });
 
 // GET /api/movies/anime?page=1
 const getAnimeMovies = asyncHandler(async (req, res) => {
-    const page = parseInt(req.query.page, 10) || 1;
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
     const data = await movieService.getAnimeMovies(page);
     res.json({ success: true, data });
 });
 
 // GET /api/movies/tv-shows?page=1
 const getTVShows = asyncHandler(async (req, res) => {
-    const page = parseInt(req.query.page, 10) || 1;
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
     const data = await movieService.getTVShows(page);
     res.json({ success: true, data });
 });
@@ -61,15 +61,22 @@ const getMovieDetail = asyncHandler(async (req, res) => {
 // GET /api/movies/search?keyword=xxx&page=1
 const searchMovies = asyncHandler(async (req, res) => {
     const { keyword } = req.query;
-    const page = parseInt(req.query.page, 10) || 1;
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
     const data = await movieService.searchMovies(keyword, page);
+    res.json({ success: true, data });
+});
+
+// GET /api/movies/suggest?keyword=xxx - goi y tim kiem nhanh
+const suggestMovies = asyncHandler(async (req, res) => {
+    const { keyword } = req.query;
+    const data = await movieService.suggestMovies(keyword);
     res.json({ success: true, data });
 });
 
 // GET /api/movies/genre/:slug?page=1
 const getMoviesByGenre = asyncHandler(async (req, res) => {
     const { slug } = req.params;
-    const page = parseInt(req.query.page, 10) || 1;
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
     const data = await movieService.getMoviesByGenre(slug, page);
     res.json({ success: true, data });
 });
@@ -77,7 +84,7 @@ const getMoviesByGenre = asyncHandler(async (req, res) => {
 // GET /api/movies/country/:slug?page=1
 const getMoviesByCountry = asyncHandler(async (req, res) => {
     const { slug } = req.params;
-    const page = parseInt(req.query.page, 10) || 1;
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
     const data = await movieService.getMoviesByCountry(slug, page);
     res.json({ success: true, data });
 });
@@ -121,6 +128,7 @@ module.exports = {
     getTVShows,
     getMovieDetail,
     searchMovies,
+    suggestMovies,
     getMoviesByGenre,
     getMoviesByCountry,
     getGenreList,

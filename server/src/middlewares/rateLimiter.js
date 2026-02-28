@@ -33,4 +33,16 @@ const searchLimiter = rateLimit({
     },
 });
 
-module.exports = { globalLimiter, searchLimiter };
+// Rate limiter rieng cho suggest - cho phep nhieu hon vi user go tung ky tu
+const suggestLimiter = rateLimit({
+    windowMs: 60_000,  // 1 phut
+    max: 60,           // 60 request/phut cho suggest
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: {
+        success: false,
+        message: 'Qua nhieu yeu cau goi y, vui long cho 1 phut',
+    },
+});
+
+module.exports = { globalLimiter, searchLimiter, suggestLimiter };

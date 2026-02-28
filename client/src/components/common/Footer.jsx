@@ -1,10 +1,11 @@
+import { memo } from 'react';
 import { Link } from 'react-router-dom';
 
 /**
- * Footer - chân trang với thông tin liên hệ, thể loại, social
- * Responsive: 4 cột → 2 cột → 1 cột
+ * Footer - chan trang voi thong tin lien he, the loai, social
+ * Responsive: 4 cot -> 2 cot -> 1 cot
  */
-function Footer() {
+const Footer = memo(function Footer() {
     return (
         <footer className="bg-surface mt-15 px-12 max-lg:px-6 max-md:px-4 pt-12 max-lg:pt-10 max-md:pt-8 pb-6 max-md:pb-4">
             <div className="grid grid-cols-[2fr_1fr_1fr_1fr] max-lg:grid-cols-2 max-md:grid-cols-1 gap-10 max-md:gap-6 mb-10">
@@ -32,7 +33,7 @@ function Footer() {
                     </div>
                 </div>
 
-                {/* Thể loại */}
+                {/* The loai */}
                 <div>
                     <h4 className="text-sm font-bold text-white mb-4">Thể loại</h4>
                     <Link to="/the-loai/hanh-dong" className="block text-[13px] text-neutral-500 mb-2.5 hover:text-primary transition-colors">Phim hành động</Link>
@@ -43,7 +44,7 @@ function Footer() {
                     <Link to="/the-loai/tai-lieu" className="block text-[13px] text-neutral-500 mb-2.5 hover:text-primary transition-colors">Phim tài liệu</Link>
                 </div>
 
-                {/* Hỗ trợ */}
+                {/* Ho tro */}
                 <div>
                     <h4 className="text-sm font-bold text-white mb-4">Hỗ trợ</h4>
                     <a href="#" className="block text-[13px] text-neutral-500 mb-2.5 hover:text-primary transition-colors">Trung tâm trợ giúp</a>
@@ -53,7 +54,7 @@ function Footer() {
                     <a href="#" className="block text-[13px] text-neutral-500 mb-2.5 hover:text-primary transition-colors">Góp ý</a>
                 </div>
 
-                {/* Về chúng tôi */}
+                {/* Ve chung toi */}
                 <div>
                     <h4 className="text-sm font-bold text-white mb-4">Về chúng tôi</h4>
                     <a href="#" className="block text-[13px] text-neutral-500 mb-2.5 hover:text-primary transition-colors">Giới thiệu</a>
@@ -70,6 +71,6 @@ function Footer() {
             </div>
         </footer>
     );
-}
+});
 
 export default Footer;

@@ -1,16 +1,18 @@
 import { memo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getPosterUrl, getThumbUrl } from '../../utils/constants';
+import { handleImageError, scrollToTop } from '../../utils/helpers';
+import PlayIcon from './PlayIcon';
 
 /**
- * Component thẻ phim - dùng memo để tránh re-render không cần thiết
- * Sử dụng trong tất cả các section: phim bộ, phim lẻ, trending...
- * group/group-hover pattern cho hiệu ứng hover parent → child
+ * The phim - dung memo tranh re-render khong can thiet
+ * Dung o tat ca section: phim bo, phim le, trending...
+ * group/group-hover pattern hieu ung hover parent -> child
  */
 const MovieCard = memo(function MovieCard({ movie, landscape = false }) {
     const navigate = useNavigate();
 
-    // Lấy thông tin từ movie object (ophim API format)
+    // Lay thong tin tu movie object (ophim API format)
     const name = movie?.name || movie?.title || 'Không có tên';
     const slug = movie?.slug || '';
     const posterUrl = movie?.poster_url || movie?.thumb_url || '';
@@ -19,10 +21,10 @@ const MovieCard = memo(function MovieCard({ movie, landscape = false }) {
     const quality = movie?.quality || '';
     const categories = movie?.category || [];
 
-    // Tạo URL hình ảnh
+    // Tao URL hinh anh
     const imgSrc = landscape ? getThumbUrl(thumbUrl) : getPosterUrl(posterUrl);
 
-    // Xác định badge style
+    // Xac dinh badge style
     const getBadge = () => {
         if (quality?.toLowerCase().includes('4k')) return { cls: 'bg-gradient-to-br from-primary to-primary-dark', text: '4K' };
         if (episodeCurrent?.toLowerCase().includes('full') || episodeCurrent?.toLowerCase().includes('hoàn thành')) {
@@ -44,8 +46,7 @@ const MovieCard = memo(function MovieCard({ movie, landscape = false }) {
 
     const handleClick = useCallback(() => {
         if (slug) {
-            // Scroll lên đầu trang trước khi chuyển → người dùng thấy player ngay
-            window.scrollTo({ top: 0, behavior: 'instant' });
+            scrollToTop();
             navigate(`/phim/${slug}`);
         }
     }, [slug, navigate]);
@@ -66,10 +67,7 @@ const MovieCard = memo(function MovieCard({ movie, landscape = false }) {
                 src={imgSrc}
                 alt={name}
                 loading="lazy"
-                onError={(e) => {
-                    e.target.style.background = 'linear-gradient(135deg, #1a1a2e, #16213e)';
-                    e.target.src = '';
-                }}
+                onError={handleImageError}
             />
 
             {/* Badge (VIP, Free, HD, HOT) */}
@@ -77,7 +75,7 @@ const MovieCard = memo(function MovieCard({ movie, landscape = false }) {
                 {badge.text}
             </span>
 
-            {/* Tập hiện tại (ẩn khi hover) */}
+            {/* Tap hien tai (an khi hover) */}
             {episodeCurrent && !landscape && (
                 <div className="absolute bottom-0 inset-x-0 bg-black/70 text-center py-1 text-[11px] text-neutral-300 rounded-b-lg group-hover:hidden">
                     {episodeCurrent}
@@ -86,9 +84,9 @@ const MovieCard = memo(function MovieCard({ movie, landscape = false }) {
 
             {/* Overlay khi hover */}
             <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/85 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3.5">
-                {/* Nút play ở giữa */}
+                {/* Nut play o giua */}
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-primary/90 flex items-center justify-center opacity-0 scale-75 group-hover:opacity-100 group-hover:scale-100 transition-all duration-300">
-                    <svg className="w-[22px] h-[22px] fill-white" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                    <PlayIcon className="w-[22px] h-[22px] fill-white" />
                 </div>
                 <div className="text-[13px] font-semibold truncate mb-1">{name}</div>
                 <div className="text-[11px] text-neutral-500">{subText}</div>

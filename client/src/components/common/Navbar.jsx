@@ -1,31 +1,61 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { NAV_LINKS } from '../../utils/constants';
+import SearchSuggestions from './SearchSuggestions';
 
 /**
- * Navbar - thanh điều hướng chính
- * Fixed top, đổi nền khi cuộn, responsive mobile
+ * Navbar - thanh dieu huong chinh
+ * Fixed top, doi nen khi cuon, responsive mobile
+ * Tich hop goi y tim kiem (autocomplete) khi go thanh search
  */
 function Navbar() {
     const [scrolled, setScrolled] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
+    const [searchFocused, setSearchFocused] = useState(false);
     const navigate = useNavigate();
     const location = useLocation();
+    const searchWrapperRef = useRef(null);
+    const suggestKeyDownRef = useRef(null);
 
-    // Scroll effect - thêm nền đậm khi cuộn xuống
+    // Scroll effect - them nen dam khi cuon xuong
     useEffect(() => {
         const handleScroll = () => setScrolled(window.scrollY > 50);
         window.addEventListener('scroll', handleScroll, { passive: true });
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
-    // Xử lý tìm kiếm
+    // Xu ly tim kiem + chuyen keyboard events cho dropdown goi y
     const handleSearch = useCallback((e) => {
+        // Uu tien keyboard nav cua dropdown truoc
+        if (suggestKeyDownRef.current) {
+            suggestKeyDownRef.current(e);
+            // Neu dropdown da xu ly Enter/ArrowUp/ArrowDown thi khong submit
+            if (['ArrowDown', 'ArrowUp'].includes(e.key)) return;
+            if (e.key === 'Enter' && e.defaultPrevented) return;
+        }
         if (e.key === 'Enter' && searchQuery.trim()) {
             navigate(`/tim-kiem?keyword=${encodeURIComponent(searchQuery.trim())}`);
             setSearchQuery('');
+            setSearchFocused(false);
         }
     }, [searchQuery, navigate]);
+
+    // Dong dropdown khi click ra ngoai vung search
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (searchWrapperRef.current && !searchWrapperRef.current.contains(e.target)) {
+                setSearchFocused(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    // Dong dropdown khi chuyen trang
+    useEffect(() => {
+        setSearchFocused(false);
+        setSearchQuery('');
+    }, [location.pathname]);
 
     return (
         <nav
@@ -46,7 +76,7 @@ function Navbar() {
                 PhimHay
             </Link>
 
-            {/* Navigation links - ẩn trên mobile */}
+            {/* Navigation links - an tren mobile */}
             <div className="flex gap-7 flex-1 max-md:hidden">
                 {NAV_LINKS.map((link) => (
                     <Link
@@ -63,24 +93,36 @@ function Navbar() {
                 ))}
             </div>
 
-            {/* Phần bên phải: search, buttons */}
+            {/* Phan ben phai: search, buttons */}
             <div className="flex items-center gap-4">
-                <div className="flex items-center bg-white/10 border border-white/15 rounded-full px-3.5 py-1.5 transition-all focus-within:bg-white/15 focus-within:border-white/30">
-                    <svg className="w-4 h-4 fill-neutral-500 mr-2 shrink-0" viewBox="0 0 24 24">
-                        <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
-                    </svg>
-                    <input
-                        type="text"
-                        placeholder="Tìm phim, diễn viên..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        onKeyDown={handleSearch}
-                        className="bg-transparent border-none outline-none text-white text-[13px] w-40 max-md:w-[100px] placeholder:text-neutral-500"
+                {/* Search box + dropdown goi y */}
+                <div className="relative" ref={searchWrapperRef}>
+                    <div className="flex items-center bg-white/10 border border-white/15 rounded-full px-3.5 py-1.5 transition-all focus-within:bg-white/15 focus-within:border-white/30">
+                        <svg className="w-4 h-4 fill-neutral-500 mr-2 shrink-0" viewBox="0 0 24 24">
+                            <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+                        </svg>
+                        <input
+                            type="text"
+                            placeholder="Tìm phim, diễn viên..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            onKeyDown={handleSearch}
+                            onFocus={() => setSearchFocused(true)}
+                            className="bg-transparent border-none outline-none text-white text-[13px] w-40 max-md:w-[100px] placeholder:text-neutral-500"
+                        />
+                    </div>
+
+                    {/* Dropdown goi y tim kiem */}
+                    <SearchSuggestions
+                        query={searchQuery}
+                        isFocused={searchFocused}
+                        onSelect={() => {
+                            setSearchQuery('');
+                            setSearchFocused(false);
+                        }}
+                        onKeyDown={(handler) => { suggestKeyDownRef.current = handler; }}
                     />
                 </div>
-                <button className="px-5 py-[7px] bg-gradient-to-br from-primary to-primary-dark text-white text-[13px] font-semibold rounded transition-all hover:-translate-y-px hover:shadow-[0_4px_15px_rgba(30,144,255,0.4)]">
-                    Mua VIP
-                </button>
                 <button className="px-5 py-[7px] bg-primary text-white text-[13px] font-semibold rounded hover:bg-primary-light transition-colors">
                     Đăng nhập
                 </button>

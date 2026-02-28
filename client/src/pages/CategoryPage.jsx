@@ -1,10 +1,14 @@
-import { useState, useMemo } from 'react';
-import { useParams } from 'react-router-dom';
-import { useMovieList } from '../hooks/useMovies';
-import MovieCard from '../components/common/MovieCard';
+import { useState, useEffect, useMemo } from 'react';
+import { useParams, useLocation } from 'react-router-dom';
+import { useMovieList, useMoviesByGenre, useMoviesByCountry } from '../hooks/useMovies';
+import { usePageTitle } from '../hooks/usePageTitle';
 import Loading from '../components/common/Loading';
+import ErrorState from '../components/common/ErrorState';
+import MovieGrid from '../components/common/MovieGrid';
+import Pagination from '../components/common/Pagination';
+import { parseApiData, PAGE_PADDING } from '../utils/helpers';
 
-// Map type sang tiêu đề hiển thị
+// Map type sang tieu de hien thi
 const TITLE_MAP = {
     'phim-moi': 'Phim mới cập nhật',
     'phim-bo': 'Phim bộ',
@@ -14,103 +18,82 @@ const TITLE_MAP = {
 };
 
 /**
- * Trang danh sách phim theo loại / thể loại / quốc gia
+ * Xac dinh loai route tu pathname
+ * /the-loai/:slug -> 'genre'
+ * /quoc-gia/:slug -> 'country'
+ * /danh-sach/:type -> 'list'
+ */
+const getRouteType = (pathname) => {
+    if (pathname.startsWith('/the-loai/')) return 'genre';
+    if (pathname.startsWith('/quoc-gia/')) return 'country';
+    return 'list';
+};
+
+/**
+ * Trang danh sach phim theo loai / the loai / quoc gia
+ * Tu dong nhan dien route de goi API tuong ung
  */
 function CategoryPage() {
     const { type, slug } = useParams();
+    const { pathname } = useLocation();
     const [page, setPage] = useState(1);
 
-    const categoryType = type || slug || 'phim-moi';
-    const title = TITLE_MAP[categoryType] || categoryType;
+    const routeType = getRouteType(pathname);
+    const categorySlug = type || slug || 'phim-moi';
 
-    const { data, loading, error, refetch } = useMovieList(categoryType, page);
+    // Tao title tu slug khi la the loai / quoc gia (chua co map san)
+    const title = TITLE_MAP[categorySlug]
+        || categorySlug.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 
-    const movies = useMemo(() => {
-        if (!data) return [];
-        const innerData = data?.data || data;
-        return innerData?.items || [];
-    }, [data]);
+    // Reset page khi doi route
+    useEffect(() => {
+        setPage(1);
+    }, [pathname]);
 
-    const pagination = useMemo(() => {
-        if (!data) return null;
-        const innerData = data?.data || data;
-        return innerData?.params?.pagination || null;
-    }, [data]);
+    // Goi hook tuong ung voi loai route
+    const listResult = useMovieList(categorySlug, page, routeType === 'list');
+    const genreResult = useMoviesByGenre(categorySlug, page, routeType === 'genre');
+    const countryResult = useMoviesByCountry(categorySlug, page, routeType === 'country');
+
+    // Chon ket qua tuong ung
+    const result = routeType === 'genre' ? genreResult
+        : routeType === 'country' ? countryResult
+        : listResult;
+
+    const { data, loading, error, refetch } = result;
+    const { items: movies, pagination } = useMemo(() => parseApiData(data), [data]);
+    usePageTitle(title);
 
     if (loading) return <Loading fullScreen />;
 
     if (error) {
         return (
-            <div className="pt-20 px-12 max-lg:px-6 max-md:px-4 min-h-screen">
-                <div className="flex flex-col items-center justify-center min-h-[300px] text-center p-10">
-                    <h2 className="text-2xl text-white mb-3">Không thể tải danh sách phim</h2>
-                    <p className="text-neutral-500 mb-6">{error}</p>
-                    <button
-                        onClick={refetch}
-                        className="px-7 py-2.5 bg-primary text-white text-sm font-semibold rounded hover:bg-primary-light transition-colors"
-                    >
-                        Thử lại
-                    </button>
-                </div>
-            </div>
+            <ErrorState
+                title="Không thể tải danh sách phim"
+                message={error}
+                onRetry={refetch}
+                hasTopPadding
+            />
         );
     }
 
     return (
-        <div className="pt-20 max-md:pt-[72px] px-12 max-lg:px-6 max-md:px-4 pb-10 max-md:pb-8 min-h-screen">
+        <div className={`${PAGE_PADDING} min-h-screen`}>
             <h1 className="text-[28px] font-bold mb-6">{title}</h1>
 
             {movies.length === 0 ? (
                 <p className="text-neutral-500">Chưa có phim nào trong danh mục này.</p>
             ) : (
                 <>
-                    {/* Grid phim */}
-                    <div className="grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] max-md:grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-4 max-md:gap-2.5 [&>*]:flex-none [&>*]:w-full">
-                        {movies.map((movie) => (
-                            <MovieCard key={movie._id || movie.slug} movie={movie} />
-                        ))}
-                    </div>
+                    <MovieGrid movies={movies} />
 
-                    {/* Phân trang */}
-                    {pagination && pagination.totalPages > 1 && (
-                        <div className="flex justify-center gap-2 mt-10">
-                            <button
-                                disabled={page <= 1}
-                                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                                className="px-4 py-2 bg-white/[0.08] text-neutral-300 text-sm rounded transition-all hover:bg-primary hover:text-white disabled:opacity-40 disabled:cursor-not-allowed"
-                            >
-                                ← Trước
-                            </button>
-
-                            {/* Số trang */}
-                            {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
-                                const startPage = Math.max(1, page - 2);
-                                const pageNum = startPage + i;
-                                if (pageNum > pagination.totalPages) return null;
-                                return (
-                                    <button
-                                        key={pageNum}
-                                        className={`px-4 py-2 text-sm rounded transition-all ${
-                                            page === pageNum
-                                                ? 'bg-primary text-white'
-                                                : 'bg-white/[0.08] text-neutral-300 hover:bg-primary hover:text-white'
-                                        }`}
-                                        onClick={() => setPage(pageNum)}
-                                    >
-                                        {pageNum}
-                                    </button>
-                                );
-                            })}
-
-                            <button
-                                disabled={page >= pagination.totalPages}
-                                onClick={() => setPage((p) => p + 1)}
-                                className="px-4 py-2 bg-white/[0.08] text-neutral-300 text-sm rounded transition-all hover:bg-primary hover:text-white disabled:opacity-40 disabled:cursor-not-allowed"
-                            >
-                                Sau →
-                            </button>
-                        </div>
-                    )}
+                    {/* Phan trang co so trang */}
+                    <Pagination
+                        page={page}
+                        totalPages={pagination?.totalPages}
+                        onPageChange={setPage}
+                        showPageNumbers
+                    />
                 </>
             )}
         </div>

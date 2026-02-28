@@ -1,12 +1,15 @@
+import { memo } from 'react';
+import PlayIcon from './PlayIcon';
+
 /**
- * Component loading spinner - vòng tròn hiệu ứng cinema
- * SVG circle với dash animation đổi màu primary → cyan
- * Hỗ trợ fullScreen cho trang loading toàn bộ
+ * Loading spinner - hieu ung vong tron cinema
+ * SVG circle dash animation doi mau primary -> cyan
+ * Ho tro fullScreen
  */
-function Loading({ fullScreen = false }) {
+const Loading = memo(function Loading({ fullScreen = false }) {
     return (
         <div className={`flex flex-col items-center justify-center gap-4 ${fullScreen ? 'min-h-screen' : 'min-h-[200px]'}`}>
-            {/* Vòng tròn xoay cinema */}
+            {/* Vong tron xoay cinema */}
             <div
                 className="relative"
                 style={{ width: fullScreen ? 64 : 48, height: fullScreen ? 64 : 48 }}
@@ -28,14 +31,9 @@ function Loading({ fullScreen = false }) {
                         }}
                     />
                 </svg>
-                {/* Icon play nhỏ ở giữa */}
+                {/* Icon play nho o giua */}
                 {fullScreen && (
-                    <svg
-                        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-5 h-5 fill-primary/60"
-                        viewBox="0 0 24 24"
-                    >
-                        <path d="M8 5v14l11-7z" />
-                    </svg>
+                    <PlayIcon className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-5 h-5 fill-primary/60" />
                 )}
             </div>
             {fullScreen && (
@@ -43,6 +41,6 @@ function Loading({ fullScreen = false }) {
             )}
         </div>
     );
-}
+});
 
 export default Loading;

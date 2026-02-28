@@ -11,7 +11,7 @@ const api = axios.create({
     },
 });
 
-// Response interceptor - xử lý lỗi tập trung
+// Response interceptor - xu ly loi tap trung
 api.interceptors.response.use(
     (response) => response.data,
     (error) => {
@@ -23,23 +23,26 @@ api.interceptors.response.use(
 
 // ===== MOVIE API =====
 export const movieApi = {
-    // Trang chủ
+    // Trang chu
     getHome: () => api.get('/movies/home'),
 
-    // Danh sách phim
+    // Danh sach phim
     getNewMovies: (page = 1) => api.get(`/movies/new?page=${page}`),
     getSeriesMovies: (page = 1) => api.get(`/movies/series?page=${page}`),
     getSingleMovies: (page = 1) => api.get(`/movies/single?page=${page}`),
     getAnimeMovies: (page = 1) => api.get(`/movies/anime?page=${page}`),
     getTVShows: (page = 1) => api.get(`/movies/tv-shows?page=${page}`),
 
-    // Chi tiết phim
+    // Chi tiet phim
     getMovieDetail: (slug) => api.get(`/movies/detail/${slug}`),
 
-    // Tìm kiếm
+    // Tim kiem
     searchMovies: (keyword, page = 1) => api.get(`/movies/search?keyword=${encodeURIComponent(keyword)}&page=${page}`),
 
-    // Thể loại / Quốc gia
+    // Goi y tim kiem nhanh (dropdown autocomplete)
+    suggestMovies: (keyword) => api.get(`/movies/suggest?keyword=${encodeURIComponent(keyword)}`),
+
+    // The loai / Quoc gia
     getGenreList: () => api.get('/movies/genres'),
     getCountryList: () => api.get('/movies/countries'),
     getMoviesByGenre: (slug, page = 1) => api.get(`/movies/genre/${slug}?page=${page}`),

@@ -1,22 +1,23 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getPosterUrl, getThumbUrl } from '../../utils/constants';
+import PlayIcon from '../common/PlayIcon';
 
 /**
- * Hero Carousel - banner chính trang chủ
- * Tự động chuyển slide, hover thì dừng
- * group/hero pattern cho hiệu ứng hover hiện mũi tên
+ * HeroCarousel - banner chinh trang chu
+ * Tu dong chuyen slide, hover thi dung
+ * group/hero pattern hieu ung hover hien mui ten
  */
 function HeroCarousel({ movies = [] }) {
     const [currentSlide, setCurrentSlide] = useState(0);
     const autoSlideRef = useRef(null);
     const navigate = useNavigate();
 
-    // Chỉ lấy tối đa 5 phim cho carousel
+    // Chi lay toi da 5 phim cho carousel
     const slides = movies.slice(0, 5);
     const totalSlides = slides.length;
 
-    // Chuyển slide
+    // Chuyen slide
     const goToSlide = useCallback((index) => {
         setCurrentSlide(index);
     }, []);
@@ -47,7 +48,7 @@ function HeroCarousel({ movies = [] }) {
         return () => stopAutoSlide();
     }, [totalSlides, startAutoSlide, stopAutoSlide]);
 
-    // Trạng thái placeholder khi chưa có data
+    // Trang thai placeholder khi chua co data
     if (slides.length === 0) {
         return (
             <section className="relative w-full h-[85vh] min-h-[500px] max-md:h-[65vh] overflow-hidden">
@@ -114,13 +115,13 @@ function HeroCarousel({ movies = [] }) {
                                 />
                             )}
 
-                            {/* Gradient overlay (trái → phải + dưới → trên) */}
+                            {/* Gradient overlay (trai -> phai + duoi -> tren) */}
                             <div
                                 className="absolute inset-0 after:content-[''] after:absolute after:bottom-0 after:inset-x-0 after:h-[200px] after:bg-gradient-to-t after:from-dark after:to-transparent"
                                 style={{ background: 'linear-gradient(to right, rgba(13,13,13,0.95) 0%, rgba(13,13,13,0.7) 30%, rgba(13,13,13,0.2) 60%, transparent 100%)' }}
                             />
 
-                            {/* Nội dung slide */}
+                            {/* Noi dung slide */}
                             <div className="absolute bottom-1/4 max-md:bottom-[20%] left-12 max-lg:left-6 max-md:left-4 max-w-[550px] max-lg:max-w-[420px] max-md:max-w-none max-md:right-4 z-[2]">
                                 <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-primary/90 rounded-[3px] text-[11px] font-bold uppercase tracking-wide mb-4">
                                     {index === 0 ? '🔥 Độc quyền' : index === 1 ? '🎬 Phim mới' : '⭐ HOT'}
@@ -163,7 +164,7 @@ function HeroCarousel({ movies = [] }) {
                                         className="inline-flex items-center gap-2 px-8 py-3 bg-primary text-white text-[15px] font-bold rounded transition-all hover:bg-primary-light hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(30,144,255,0.4)]"
                                         onClick={() => navigate(`/phim/${movie.slug}`)}
                                     >
-                                        <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                                        <PlayIcon className="w-5 h-5 fill-current" />
                                         Xem ngay
                                     </button>
                                     <button
@@ -190,7 +191,7 @@ function HeroCarousel({ movies = [] }) {
                 })}
             </div>
 
-            {/* Mũi tên điều hướng + Dots */}
+            {/* Mui ten dieu huong + Dots */}
             {totalSlides > 1 && (
                 <>
                     <button

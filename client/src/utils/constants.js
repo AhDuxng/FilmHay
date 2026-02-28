@@ -16,14 +16,7 @@ export const getThumbUrl = (thumbUrl) => {
     return `${IMG_CDN_URL}/${thumbUrl}`;
 };
 
-// Map badge type
-export const BADGE_MAP = {
-    'trailer': { className: 'badge-new', text: 'Trailer' },
-    'completed': { className: 'badge-free', text: 'Full' },
-    'ongoing': { className: 'badge-hot', text: 'Đang chiếu' },
-};
-
-// Category tabs trang chủ
+// Category tabs trang chu (filter theo quoc gia)
 export const CATEGORY_TABS = [
     { label: 'Tất cả', value: 'all' },
     { label: 'Phim Việt', value: 'viet-nam' },
@@ -42,7 +35,7 @@ export const NAV_LINKS = [
     { label: 'TV Shows', path: '/danh-sach/tv-shows' },
 ];
 
-// Kênh truyền hình trực tiếp (static data)
+// Kenh truyen hinh truc tiep (static data)
 export const LIVE_CHANNELS = [
     { name: 'Kênh Thời Sự', desc: 'Đang phát sóng', emoji: '📺', color: '#1a237e, #283593' },
     { name: 'Kênh Thể Thao', desc: 'V-League 2026', emoji: '⚽', color: '#004d40, #00695c' },

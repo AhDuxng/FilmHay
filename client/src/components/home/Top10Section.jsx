@@ -1,9 +1,11 @@
 import { memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getPosterUrl } from '../../utils/constants';
+import { handleImageError, SECTION_PADDING } from '../../utils/helpers';
+import SectionHeader from '../common/SectionHeader';
 
 /**
- * Top 10 section - hiển thị số thứ tự lớn phong cách Netflix
+ * Top 10 section - hien thi so thu tu lon phong cach Netflix
  */
 const Top10Section = memo(function Top10Section({ movies = [] }) {
     const navigate = useNavigate();
@@ -12,13 +14,8 @@ const Top10Section = memo(function Top10Section({ movies = [] }) {
     if (top10.length === 0) return null;
 
     return (
-        <section className="px-12 max-lg:px-6 max-md:px-4 mb-10 relative">
-            <div className="flex items-center justify-between mb-4">
-                <h2 className="text-[22px] max-md:text-lg font-bold text-white pl-3.5 relative">
-                    <span className="absolute left-0 top-0.5 bottom-0.5 w-1 bg-primary rounded-sm" />
-                    Top 10 hôm nay
-                </h2>
-            </div>
+        <section className={`${SECTION_PADDING} mb-10 relative`}>
+            <SectionHeader title="Top 10 hôm nay" />
 
             <div className="flex gap-4 overflow-x-auto scroll-smooth pb-2.5 scrollbar-hide">
                 {top10.map((movie, index) => {
@@ -29,7 +26,7 @@ const Top10Section = memo(function Top10Section({ movies = [] }) {
                             className="flex-[0_0_200px] max-md:flex-[0_0_160px] flex items-end relative cursor-pointer"
                             onClick={() => navigate(`/phim/${movie.slug}`)}
                         >
-                            {/* Số thứ tự lớn */}
+                            {/* So thu tu lon */}
                             <span
                                 className="text-[140px] max-md:text-[100px] font-black leading-[0.8] text-transparent mr-[-30px] z-[1] select-none"
                                 style={{ WebkitTextStroke: '3px #1e90ff' }}
@@ -44,10 +41,7 @@ const Top10Section = memo(function Top10Section({ movies = [] }) {
                                     src={posterUrl}
                                     alt={movie.name}
                                     loading="lazy"
-                                    onError={(e) => {
-                                        e.target.style.background = 'linear-gradient(135deg, #1a1a2e, #2196f3)';
-                                        e.target.src = '';
-                                    }}
+                                    onError={handleImageError}
                                 />
                             ) : (
                                 <div
