@@ -45,4 +45,32 @@ const suggestLimiter = rateLimit({
     },
 });
 
-module.exports = { globalLimiter, searchLimiter, suggestLimiter };
+// Factory function de tao custom rate limiter
+const createRateLimiter = (options = {}) => {
+    const defaultOptions = {
+        windowMs: 60_000,
+        max: 100,
+        standardHeaders: true,
+        legacyHeaders: false,
+        message: {
+            success: false,
+            message: options.message || 'Qua nhieu yeu cau, vui long thu lai sau',
+        },
+        handler: (req, res, next, opts) => {
+            logger.warn('Custom rate limit exceeded', {
+                ip: req.ip,
+                path: req.originalUrl,
+            });
+            res.status(429).json(opts.message);
+        },
+    };
+
+    return rateLimit({ ...defaultOptions, ...options });
+};
+
+module.exports = { 
+    globalLimiter, 
+    searchLimiter, 
+    suggestLimiter,
+    createRateLimiter,
+};

@@ -1,8 +1,11 @@
 const { Router } = require('express');
 const movieController = require('../controllers/movieController');
 const { searchLimiter, suggestLimiter } = require('../middlewares/rateLimiter');
+const { authenticate } = require('../middlewares/auth.middleware');
 
 const router = Router();
+
+router.use(authenticate);
 
 // Trang chu - du lieu tong hop
 router.get('/home', movieController.getHome);

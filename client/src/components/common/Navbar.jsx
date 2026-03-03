@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { NAV_LINKS } from '../../utils/constants';
 import SearchSuggestions from './SearchSuggestions';
+import { useAuth } from '../../contexts/AuthContext';
 
 /**
  * Navbar - thanh dieu huong chinh
@@ -12,10 +13,13 @@ function Navbar() {
     const [scrolled, setScrolled] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [searchFocused, setSearchFocused] = useState(false);
+    const [userMenuOpen, setUserMenuOpen] = useState(false);
     const navigate = useNavigate();
     const location = useLocation();
     const searchWrapperRef = useRef(null);
     const suggestKeyDownRef = useRef(null);
+    const userMenuRef = useRef(null);
+    const { user, logout } = useAuth();
 
     // Scroll effect - them nen dam khi cuon xuong
     useEffect(() => {
@@ -55,7 +59,25 @@ function Navbar() {
     useEffect(() => {
         setSearchFocused(false);
         setSearchQuery('');
+        setUserMenuOpen(false);
     }, [location.pathname]);
+
+    // Dong user menu khi click ra ngoai
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            if (userMenuRef.current && !userMenuRef.current.contains(e.target)) {
+                setUserMenuOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    // Xu ly logout
+    const handleLogout = async () => {
+        await logout();
+        navigate('/login', { replace: true });
+    };
 
     return (
         <nav
@@ -123,9 +145,54 @@ function Navbar() {
                         onKeyDown={(handler) => { suggestKeyDownRef.current = handler; }}
                     />
                 </div>
-                <button className="px-5 py-[7px] bg-primary text-white text-[13px] font-semibold rounded hover:bg-primary-light transition-colors">
-                    Đăng nhập
-                </button>
+
+                {/* User menu */}
+                <div className="relative" ref={userMenuRef}>
+                    <button
+                        onClick={() => setUserMenuOpen(!userMenuOpen)}
+                        className="flex items-center gap-2 px-4 py-2 bg-white/10 border border-white/15 rounded-full hover:bg-white/15 transition-all"
+                    >
+                        <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary to-cyan flex items-center justify-center text-white text-sm font-semibold">
+                            {user?.username?.[0]?.toUpperCase() || 'U'}
+                        </div>
+                        <span className="text-white text-sm font-medium max-md:hidden">
+                            {user?.username || 'User'}
+                        </span>
+                        <svg 
+                            className={`w-4 h-4 fill-white transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} 
+                            viewBox="0 0 24 24"
+                        >
+                            <path d="M7 10l5 5 5-5z"/>
+                        </svg>
+                    </button>
+
+                    {/* Dropdown menu */}
+                    {userMenuOpen && (
+                        <div className="absolute right-0 top-full mt-2 w-56 bg-[#1a1a1a] border border-white/10 rounded-lg shadow-xl overflow-hidden animate-slideDown">
+                            <div className="px-4 py-3 border-b border-white/10">
+                                <p className="text-white font-semibold text-sm">{user?.full_name || user?.username}</p>
+                                <p className="text-neutral-400 text-xs mt-0.5">{user?.email}</p>
+                                {user?.role === 'admin' && (
+                                    <span className="inline-block mt-2 px-2 py-0.5 bg-primary/20 text-primary text-xs font-medium rounded">
+                                        Admin
+                                    </span>
+                                )}
+                            </div>
+                            <div className="py-1">
+                                <button
+                                    onClick={handleLogout}
+                                    className="w-full px-4 py-2.5 text-left text-white hover:bg-white/10 transition-colors flex items-center gap-2 text-sm"
+                                >
+                                    <svg className="w-4 h-4 fill-white" viewBox="0 0 24 24">
+                                        <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+                                    </svg>
+                                    Đăng xuất
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+
                 <button className="hidden max-md:block bg-transparent text-white text-2xl">☰</button>
             </div>
         </nav>

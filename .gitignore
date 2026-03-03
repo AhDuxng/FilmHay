@@ -10,3 +10,9 @@ Thumbs.db
 coverage/
 .cache/
 README.md
+!server/scripts/README.md
+init_schema.sql
+init_refresh_tokens_schema.sql
+init_users_schema.sql
+# Scripts with sensitive data
+server/scripts/seed-users.js

@@ -1,6 +1,7 @@
 const express = require('express');
 const compression = require('compression');
 const morgan = require('morgan');
+const cookieParser = require('cookie-parser');
 const path = require('path');
 
 const config = require('./config');
@@ -30,6 +31,7 @@ app.use(compression({
 app.use('/api', globalLimiter);
 
 // ===== PARSING =====
+app.use(cookieParser()); // Parse cookies
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
