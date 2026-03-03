@@ -12,41 +12,31 @@ const logger = require('./utils/logger');
 
 const app = express();
 
-// ===== SECURITY MIDDLEWARES =====
 app.use(helmetMiddleware);
 app.use(corsMiddleware);
 
-// ===== PERFORMANCE MIDDLEWARES =====
 app.use(compression({
-    level: 6,                // Can bang giua toc do nen va CPU
-    threshold: 1024,         // Chi nen response > 1KB
+    level: 6,
+    threshold: 1024,
     filter: (req, res) => {
         if (req.headers['x-no-compression']) return false;
         return compression.filter(req, res);
     },
 }));
 
-// ===== RATE LIMITING =====
 app.use('/api', globalLimiter);
 
-// ===== PARSING =====
-app.use(cookieParser()); // Parse cookies
+app.use(cookieParser());
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
-// ===== LOGGING =====
-const morganFormat = config.isProduction ? 'combined' : 'dev';
-app.use(morgan(morganFormat, {
-    stream: {
-        write: (message) => logger.info(message.trim()),
-    },
-    skip: (req) => req.url === '/api/health', // Khong log health check
+app.use(morgan(config.isProduction ? 'combined' : 'dev', {
+    stream: { write: (msg) => logger.info(msg.trim()) },
+    skip: (req) => req.url === '/api/health',
 }));
 
-// ===== API ROUTES =====
 app.use('/api', routes);
 
-// ===== ERROR HANDLING =====
 app.use(notFoundHandler);
 app.use(errorHandler);
 

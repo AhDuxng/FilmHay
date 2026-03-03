@@ -1,96 +1,53 @@
 const logger = require('../utils/logger');
 
+const CLEANUP_INTERVAL = 60 * 60 * 1000;
+
 class TokenBlacklistService {
     constructor() {
         this.blacklist = new Map();
-        
-        this.cleanupInterval = setInterval(() => {
-            this.cleanup();
-        }, 60 * 60 * 1000); // 1 hour
-
+        this.cleanupInterval = setInterval(() => this.cleanup(), CLEANUP_INTERVAL);
         logger.info('TokenBlacklistService initialized (in-memory)');
     }
 
-    /**
-     * @param {String} tokenHash - Hash cua access token
-     * @param {Number} expiryTime - Thoi diem token het han (timestamp)
-     */
     add(tokenHash, expiryTime) {
-        if (!tokenHash) {
-            throw new Error('Token hash is required');
-        }
-
+        if (!tokenHash) throw new Error('Token hash is required');
         this.blacklist.set(tokenHash, expiryTime);
-        
-        logger.debug('Token added to blacklist', { 
-            tokenHash: tokenHash.substring(0, 10) + '...',
-            expiryTime: new Date(expiryTime * 1000).toISOString(),
-            totalBlacklisted: this.blacklist.size
+        logger.debug('Token blacklisted', {
+            hash: tokenHash.substring(0, 10) + '...',
+            totalBlacklisted: this.blacklist.size,
         });
     }
 
-    /**
-     * @param {String} tokenHash - Hash cua access token
-     * @returns {Boolean} true neu token da bi blacklist
-     */
     isBlacklisted(tokenHash) {
         if (!tokenHash) return false;
-
         const expiryTime = this.blacklist.get(tokenHash);
-        
         if (!expiryTime) return false;
 
-        // Neu token da het han tu roi, xoa khoi blacklist
-        const now = Math.floor(Date.now() / 1000);
-        if (expiryTime < now) {
+        if (expiryTime < Math.floor(Date.now() / 1000)) {
             this.blacklist.delete(tokenHash);
             return false;
         }
-
         return true;
     }
 
-    /**
-     * Xoa cac token da het han khoi blacklist
-     */
     cleanup() {
         const now = Math.floor(Date.now() / 1000);
-        let removedCount = 0;
+        let removed = 0;
 
-        for (const [tokenHash, expiryTime] of this.blacklist.entries()) {
-            if (expiryTime < now) {
-                this.blacklist.delete(tokenHash);
-                removedCount++;
+        for (const [hash, expiry] of this.blacklist) {
+            if (expiry < now) {
+                this.blacklist.delete(hash);
+                removed++;
             }
         }
 
-        if (removedCount > 0) {
-            logger.info('Blacklist cleanup completed', {
-                removed: removedCount,
-                remaining: this.blacklist.size
-            });
+        if (removed > 0) {
+            logger.info('Blacklist cleanup', { removed, remaining: this.blacklist.size });
         }
     }
 
-    /**
-     * Lay so luong token trong blacklist
-     * @returns {Number}
-     */
-    size() {
-        return this.blacklist.size;
-    }
+    size() { return this.blacklist.size; }
 
-    /**
-     * Xoa tat ca token khoi blacklist (dung cho testing)
-     */
-    clear() {
-        this.blacklist.clear();
-        logger.warn('Blacklist cleared');
-    }
-
-    /**
-     * Dung cleanup interval khi shutdown
-     */
     destroy() {
         clearInterval(this.cleanupInterval);
         this.blacklist.clear();

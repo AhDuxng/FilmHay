@@ -2,13 +2,11 @@ const helmet = require('helmet');
 const cors = require('cors');
 const config = require('../config');
 
-// Helmet - bao ve HTTP headers
 const helmetMiddleware = helmet({
     crossOriginResourcePolicy: { policy: 'cross-origin' },
     contentSecurityPolicy: config.isProduction ? undefined : false,
 });
 
-// CORS - chi cho phep client URL
 const corsMiddleware = cors({
     origin: config.isProduction
         ? config.cors.origin

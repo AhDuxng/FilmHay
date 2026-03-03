@@ -1,42 +1,25 @@
 const logger = require('../utils/logger');
 const config = require('../config');
 
-
 const errorHandler = (err, req, res, _next) => {
-    // Mac dinh
-    let statusCode = err.statusCode || 500;
-    let message = err.message || 'Loi he thong';
+    const statusCode = err.statusCode || 500;
+    const message = err.message || 'Loi he thong';
 
-    // Log error
+    const logData = { error: message, path: req.originalUrl, method: req.method };
+
     if (statusCode >= 500) {
-        logger.error('Server Error', {
-            error: message,
-            stack: err.stack,
-            path: req.originalUrl,
-            method: req.method,
-            ip: req.ip,
-        });
+        logger.error('Server Error', { ...logData, stack: err.stack, ip: req.ip });
     } else {
-        logger.warn('Client Error', {
-            error: message,
-            path: req.originalUrl,
-            statusCode,
-        });
+        logger.warn('Client Error', { ...logData, statusCode });
     }
 
-    // Response
-    const response = {
+    res.status(statusCode).json({
         success: false,
         message,
         ...(config.isProduction ? {} : { stack: err.stack }),
-    };
-
-    res.status(statusCode).json(response);
+    });
 };
 
-/**
- * Middleware xu ly 404 - Route khong ton tai
- */
 const notFoundHandler = (req, res, _next) => {
     res.status(404).json({
         success: false,

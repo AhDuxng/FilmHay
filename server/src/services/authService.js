@@ -7,182 +7,100 @@ const TokenUtils = require('../utils/tokenUtils');
 const tokenBlacklistService = require('./tokenBlacklistService');
 
 class AuthService {
-    constructor(database = supabase, blacklistService = tokenBlacklistService) {
+    constructor(database = supabase, blacklist = tokenBlacklistService) {
         this.db = database;
-        this.blacklist = blacklistService;
+        this.blacklist = blacklist;
     }
 
-    /**
-     * @param {string} identifier
-     * @param {string} password
-     * @param {Object} metadata
-     * @returns {Promise<Object>}
-     */
     login = async (identifier, password, metadata = {}) => {
-        try {
-            // Tim user theo username hoac email
-            const { data: users, error } = await this.db
-                .from('users')
-                .select('*')
-                .or(`username.eq.${identifier},email.eq.${identifier}`)
-                .eq('is_active', true)
-                .limit(1);
+        const { data: users, error } = await this.db
+            .from('users')
+            .select('*')
+            .or(`username.eq.${identifier},email.eq.${identifier}`)
+            .eq('is_active', true)
+            .limit(1);
 
-            if (error) {
-                logger.error('Database error khi tim user', { error: error.message });
-                throw new ApiError(500, 'Loi he thong khi xac thuc');
-            }
-
-            if (!users || users.length === 0) {
-                logger.warn('Login failed: User khong ton tai', { identifier });
-                // Dung message chung de khong reveal thong tin
-                throw new ApiError(401, 'Thong tin dang nhap khong chinh xac');
-            }
-
-            const user = users[0];
-
-            // Verify password
-            const isPasswordValid = await bcrypt.compare(password, user.password_hash);
-            
-            if (!isPasswordValid) {
-                logger.warn('Login failed: Sai mat khau', { 
-                    userId: user.id,
-                    username: user.username 
-                });
-                throw new ApiError(401, 'Thong tin dang nhap khong chinh xac');
-            }
-
-            // Tao tokens
-            const accessToken = this.generateAccessToken(user);
-            const refreshToken = TokenUtils.generateRefreshToken();
-
-            // Luu refresh token vao database
-            await this.saveRefreshToken(user.id, refreshToken, metadata);
-
-            // Cap nhat last_login
-            await this.updateLastLogin(user.id);
-
-            // Loai bo sensitive data
-            const userResponse = this.sanitizeUser(user);
-
-            logger.info('User dang nhap thanh cong', {
-                userId: user.id,
-                username: user.username,
-                role: user.role,
-                ip: metadata.ip
-            });
-
-            return {
-                user: userResponse,
-                accessToken,
-                refreshToken,
-            };
-        } catch (error) {
-            if (error instanceof ApiError) {
-                throw error;
-            }
-            logger.error('Loi khong mong muon trong login service', { 
-                error: error.message,
-                stack: error.stack 
-            });
-            throw new ApiError(500, 'Loi he thong khi dang nhap');
+        if (error) {
+            logger.error('Database error khi tim user', { error: error.message });
+            throw ApiError.internal('Loi he thong khi xac thuc');
         }
+
+        if (!users?.length) {
+            logger.warn('Login failed: user khong ton tai', { identifier });
+            throw ApiError.unauthorized('Thong tin dang nhap khong chinh xac');
+        }
+
+        const user = users[0];
+        const isValid = await bcrypt.compare(password, user.password_hash);
+
+        if (!isValid) {
+            logger.warn('Login failed: sai mat khau', { userId: user.id });
+            throw ApiError.unauthorized('Thong tin dang nhap khong chinh xac');
+        }
+
+        const accessToken = this._createAccessToken(user);
+        const refreshToken = TokenUtils.generateRefreshToken();
+
+        await Promise.all([
+            this._saveRefreshToken(user.id, refreshToken, metadata),
+            this._updateLastLogin(user.id),
+        ]);
+
+        logger.info('Login thanh cong', { userId: user.id, role: user.role, ip: metadata.ip });
+
+        return {
+            user: this._sanitize(user),
+            accessToken,
+            refreshToken,
+        };
     }
 
-    /**
-     * @param {string} refreshToken - Refresh token
-     * @param {Object} metadata - { ip, userAgent }
-     * @returns {Promise<Object>} Access token moi va refresh token moi
-     */
     refreshAccessToken = async (refreshToken, metadata = {}) => {
-        try {
-            if (!refreshToken) {
-                throw new ApiError(401, 'Refresh token la bat buoc');
-            }
+        if (!refreshToken) throw ApiError.unauthorized('Refresh token la bat buoc');
 
-            // Hash refresh token de tim trong database
-            const tokenHash = TokenUtils.hashToken(refreshToken);
+        const tokenHash = TokenUtils.hashToken(refreshToken);
 
-            // Tim refresh token trong database
-            const { data: tokenRecord, error } = await this.db
-                .from('refresh_tokens')
-                .select('*, users(*)')
-                .eq('token_hash', tokenHash)
-                .is('revoked_at', null)
-                .single();
+        const { data: record, error } = await this.db
+            .from('refresh_tokens')
+            .select('*, users(*)')
+            .eq('token_hash', tokenHash)
+            .is('revoked_at', null)
+            .single();
 
-            if (error || !tokenRecord) {
-                logger.warn('Refresh token khong hop le hoac da bi revoke', { 
-                    tokenHash: tokenHash.substring(0, 10) 
-                });
-                throw new ApiError(401, 'Refresh token khong hop le');
-            }
-
-            // Kiem tra token het han chua
-            const now = new Date();
-            const expiresAt = new Date(tokenRecord.expires_at);
-            
-            if (expiresAt < now) {
-                logger.warn('Refresh token da het han', { 
-                    userId: tokenRecord.user_id,
-                    expiredAt: expiresAt 
-                });
-                throw new ApiError(401, 'Refresh token da het han');
-            }
-
-            const user = tokenRecord.users;
-
-            // Kiem tra user con active khong
-            if (!user.is_active) {
-                throw new ApiError(403, 'Tai khoan da bi vo hieu hoa');
-            }
-
-            // Tao tokens moi
-            const newAccessToken = this.generateAccessToken(user);
-            const newRefreshToken = TokenUtils.generateRefreshToken();
-
-            // Revoke refresh token cu va luu token moi
-            await this.revokeRefreshToken(tokenRecord.id);
-            await this.saveRefreshToken(user.id, newRefreshToken, metadata);
-
-            logger.info('Token refresh thanh cong', {
-                userId: user.id,
-                username: user.username
-            });
-
-            return {
-                user: this.sanitizeUser(user),
-                accessToken: newAccessToken,
-                refreshToken: newRefreshToken,
-            };
-        } catch (error) {
-            if (error instanceof ApiError) {
-                throw error;
-            }
-            logger.error('Loi trong refresh token service', { 
-                error: error.message 
-            });
-            throw new ApiError(500, 'Loi he thong khi refresh token');
+        if (error || !record) {
+            logger.warn('Refresh token khong hop le', { hash: tokenHash.substring(0, 10) });
+            throw ApiError.unauthorized('Refresh token khong hop le');
         }
+
+        if (new Date(record.expires_at) < new Date()) {
+            logger.warn('Refresh token het han', { userId: record.user_id });
+            throw ApiError.unauthorized('Refresh token da het han');
+        }
+
+        const user = record.users;
+        if (!user.is_active) throw ApiError.forbidden('Tai khoan da bi vo hieu hoa');
+
+        const newAccessToken = this._createAccessToken(user);
+        const newRefreshToken = TokenUtils.generateRefreshToken();
+
+        // Revoke token cu, luu token moi dong thoi
+        await Promise.all([
+            this._revokeRefreshToken(record.id),
+            this._saveRefreshToken(user.id, newRefreshToken, metadata),
+        ]);
+
+        logger.info('Token refresh thanh cong', { userId: user.id });
+
+        return {
+            user: this._sanitize(user),
+            accessToken: newAccessToken,
+            refreshToken: newRefreshToken,
+        };
     }
 
-    /**
-     * @param {string} userId - User ID
-     * @param {string} accessToken - Access token can blacklist
-     * @param {string} refreshToken - Refresh token can revoke
-     */
     logout = async (userId, accessToken, refreshToken) => {
         try {
-            // Blacklist access token
-            if (accessToken) {
-                const tokenHash = TokenUtils.hashToken(accessToken);
-                const remainingTime = TokenUtils.getTokenRemainingTime(accessToken);
-                
-                if (remainingTime > 0) {
-                    const expiryTimestamp = Math.floor(Date.now() / 1000) + remainingTime;
-                    this.blacklist.add(tokenHash, expiryTimestamp);
-                }
-            }
+            this._blacklistAccessToken(accessToken);
 
             if (refreshToken) {
                 const tokenHash = TokenUtils.hashToken(refreshToken);
@@ -193,75 +111,60 @@ class AuthService {
                     .is('revoked_at', null);
             }
 
-            logger.info('User logout thanh cong', { userId });
-        } catch (error) {
-            logger.error('Loi khi logout', { 
-                error: error.message,
-                userId 
-            });
+            logger.info('Logout thanh cong', { userId });
+        } catch (err) {
+            logger.error('Loi khi logout', { error: err.message, userId });
         }
     }
 
-    /**
-     * @param {string} token 
-     * @returns {Promise<Object>}
-     */
     verifyAccessToken = async (token) => {
-        try {
-            // Verify JWT signature va expiry
-            const decoded = TokenUtils.verifyAccessToken(token);
+        const decoded = TokenUtils.verifyAccessToken(token);
 
-            // Kiem tra token co bi blacklist 
-            const tokenHash = TokenUtils.hashToken(token);
-            if (this.blacklist.isBlacklisted(tokenHash)) {
-                throw new ApiError(401, 'Token da bi vo hieu hoa');
-            }
+        const tokenHash = TokenUtils.hashToken(token);
+        if (this.blacklist.isBlacklisted(tokenHash)) {
+            throw ApiError.unauthorized('Token da bi vo hieu hoa');
+        }
 
-            // Lay thong tin user tu database
-            const { data: user, error } = await this.db
-                .from('users')
-                .select('id, username, email, full_name, role, is_active')
-                .eq('id', decoded.userId)
-                .single();
+        const { data: user, error } = await this.db
+            .from('users')
+            .select('id, username, email, full_name, role, is_active')
+            .eq('id', decoded.userId)
+            .single();
 
-            if (error || !user) {
-                throw new ApiError(401, 'Nguoi dung khong ton tai');
-            }
+        if (error || !user) throw ApiError.unauthorized('Nguoi dung khong ton tai');
+        if (!user.is_active) throw ApiError.forbidden('Tai khoan da bi vo hieu hoa');
 
-            if (!user.is_active) {
-                throw new ApiError(403, 'Tai khoan da bi vo hieu hoa');
-            }
+        return this._sanitize(user);
+    }
 
-            return this.sanitizeUser(user);
-        } catch (error) {
-            if (error instanceof ApiError) {
-                throw error;
-            }
-            throw new ApiError(401, 'Token khong hop le');
+    revokeAllRefreshTokens = async (userId) => {
+        await this.db
+            .from('refresh_tokens')
+            .update({ revoked_at: new Date().toISOString() })
+            .eq('user_id', userId)
+            .is('revoked_at', null);
+    }
+
+    // Blacklist access token hien tai
+    _blacklistAccessToken = (accessToken) => {
+        if (!accessToken) return;
+        const tokenHash = TokenUtils.hashToken(accessToken);
+        const remaining = TokenUtils.getTokenRemainingTime(accessToken);
+        if (remaining > 0) {
+            this.blacklist.add(tokenHash, Math.floor(Date.now() / 1000) + remaining);
         }
     }
 
-    /**
-     * @param {Object} user
-     * @returns {string}
-     */
-    generateAccessToken = (user) => {
-        const payload = {
+    _createAccessToken = (user) => {
+        return TokenUtils.generateAccessToken({
             userId: user.id,
             username: user.username,
             email: user.email,
             role: user.role,
-        };
-
-        return TokenUtils.generateAccessToken(payload);
+        });
     }
 
-    /**
-     * @param {string} userId 
-     * @param {string} refreshToken 
-     * @param {Object} metadata 
-     */
-    saveRefreshToken = async (userId, refreshToken, metadata = {}) => {
+    _saveRefreshToken = async (userId, refreshToken, metadata = {}) => {
         const tokenHash = TokenUtils.hashToken(refreshToken);
         const expiresAt = new Date(Date.now() + config.jwt.refreshToken.maxAge);
 
@@ -274,63 +177,28 @@ class AuthService {
         });
     }
 
-    /**
-     * @param {string} tokenId
-     */
-    revokeRefreshToken = async (tokenId) => {
+    _revokeRefreshToken = async (tokenId) => {
         await this.db
             .from('refresh_tokens')
             .update({ revoked_at: new Date().toISOString() })
             .eq('id', tokenId);
     }
 
-    /**
-     * @param {string} userId 
-     */
-    revokeAllRefreshTokens = async (userId) => {
-        await this.db
-            .from('refresh_tokens')
-            .update({ revoked_at: new Date().toISOString() })
-            .eq('user_id', userId)
-            .is('revoked_at', null);
-    }
-
-    /**
-     * @param {string} userId 
-     */
-    updateLastLogin = async (userId) => {
+    _updateLastLogin = async (userId) => {
         try {
             await this.db
                 .from('users')
                 .update({ last_login: new Date().toISOString() })
                 .eq('id', userId);
-        } catch (error) {
-            logger.warn('Khong the cap nhat last_login', { 
-                userId, 
-                error: error.message 
-            });
+        } catch (err) {
+            logger.warn('Khong the cap nhat last_login', { userId, error: err.message });
         }
     }
 
-    /**
-     * @param {Object} user - User object
-     * @returns {Object} Sanitized user object
-     */
-    sanitizeUser = (user) => {
-        const { password_hash, ...sanitizedUser } = user;
-        return sanitizedUser;
-    }
-
-    blacklistAccessToken = (accessToken) => {
-        if (!accessToken) return;
-        const tokenHash = TokenUtils.hashToken(accessToken);
-        const remainingTime = TokenUtils.getTokenRemainingTime(accessToken);
-        if (remainingTime > 0) {
-            const expiryTimestamp = Math.floor(Date.now() / 1000) + remainingTime;
-            this.blacklist.add(tokenHash, expiryTimestamp);
-        }
+    _sanitize = (user) => {
+        const { password_hash, ...clean } = user;
+        return clean;
     }
 }
 
-// Export singleton instance voi DI
 module.exports = new AuthService();
