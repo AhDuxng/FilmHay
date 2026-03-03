@@ -2,21 +2,18 @@ const { LRUCache } = require('lru-cache');
 const config = require('../config');
 const logger = require('./logger');
 
-// LRU Cache - In-memory cache, khong can Redis cho project nho
-// Khi scale len thi co the thay bang Redis
+// LRU Cache - In-memory cache
 const cache = new LRUCache({
     max: config.cache.maxSize,
-    ttl: config.cache.ttl * 1000, // chuyen sang milliseconds
-    updateAgeOnGet: true,         // reset TTL khi doc
+    ttl: config.cache.ttl * 1000, 
+    updateAgeOnGet: true,         
     allowStale: false,
 });
 
 /**
- * Lay du lieu tu cache hoac fetch moi tu fetchFn
- * Pattern: Cache-Aside (Lazy Loading)
- * @param {string} key - Cache key
- * @param {Function} fetchFn - Ham async de fetch data neu cache miss
- * @param {number} [ttl] - Custom TTL (ms), mac dinh dung config
+ * @param {string} key
+ * @param {Function} fetchFn 
+ * @param {number} [ttl] 
  * @returns {Promise<any>}
  */
 const getOrSet = async (key, fetchFn, ttl) => {
@@ -39,7 +36,6 @@ const getOrSet = async (key, fetchFn, ttl) => {
 };
 
 /**
- * Xoa cache theo key hoac pattern
  * @param {string} [key] - Neu khong truyen thi xoa het
  */
 const invalidate = (key) => {

@@ -14,7 +14,7 @@ const ophimClient = axios.create({
     },
 });
 
-// Response interceptor - xu ly loi tu ophim
+// Response interceptor
 ophimClient.interceptors.response.use(
     (response) => response,
     (error) => {
@@ -32,10 +32,6 @@ ophimClient.interceptors.response.use(
     }
 );
 
-/**
- * Lay du lieu trang chu (home)
- * Cache 5 phut vi data khong thay doi thuong xuyen
- */
 const getHome = async () => {
     return getOrSet('home', async () => {
         const { data } = await ophimClient.get('/home');
@@ -44,7 +40,6 @@ const getHome = async () => {
 };
 
 /**
- * Lay danh sach phim moi cap nhat
  * @param {number} page - So trang
  */
 const getNewMovies = async (page = 1) => {
@@ -157,13 +152,10 @@ const searchMovies = async (keyword, page = 1) => {
             params: { keyword: safeKeyword, page },
         });
         return data;
-    }, 120_000); // Cache search 2 phut (ngan hon)
+    }, 120_000); 
 };
 
 /**
- * Goi y tim kiem nhanh - tra ve toi da 8 ket qua nhe
- * Chi lay cac truong can thiet cho dropdown goi y
- * Cache 2 phut, gioi han do dai keyword
  * @param {string} keyword
  */
 const suggestMovies = async (keyword) => {

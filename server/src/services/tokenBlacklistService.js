@@ -12,7 +12,6 @@ class TokenBlacklistService {
     }
 
     /**
-     * Them token vao blacklist
      * @param {String} tokenHash - Hash cua access token
      * @param {Number} expiryTime - Thoi diem token het han (timestamp)
      */
@@ -31,7 +30,6 @@ class TokenBlacklistService {
     }
 
     /**
-     * Kiem tra token co trong blacklist khong
      * @param {String} tokenHash - Hash cua access token
      * @returns {Boolean} true neu token da bi blacklist
      */
@@ -100,5 +98,4 @@ class TokenBlacklistService {
     }
 }
 
-// Export singleton instance
 module.exports = new TokenBlacklistService();

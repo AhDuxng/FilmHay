@@ -1,5 +1,3 @@
-require('dotenv').config();
-
 const path = require('path');
 
 module.exports = {
@@ -11,13 +9,13 @@ module.exports = {
     // OPHIM API
     ophim: {
         baseUrl: process.env.OPHIM_BASE_URL || 'https://ophim1.com/v1/api',
-        timeout: 10_000, // 10s timeout cho external API
+        timeout: 10_000, 
     },
 
     // Cache
     cache: {
-        ttl: parseInt(process.env.CACHE_TTL, 10) || 300,       // 5 phut mac dinh
-        maxSize: 500,                                            // Toi da 500 entries trong LRU cache
+        ttl: parseInt(process.env.CACHE_TTL, 10) || 300,      
+        maxSize: 500,                                            
     },
 
     // Rate Limiting
@@ -31,24 +29,24 @@ module.exports = {
         origin: process.env.CLIENT_URL || 'http://localhost:5173',
     },
 
-    // Static files (production - serve React build)
+    // Static files 
     staticPath: path.join(__dirname, '../../client/dist'),
 
     // JWT Authentication - Access & Refresh Token rieng biet
     jwt: {
-        // Access Token - Thoi han ngan (15 phut)
+        
         accessToken: {
             secret: process.env.JWT_ACCESS_SECRET || 'access-token-secret-change-in-production',
             expiresIn: process.env.JWT_ACCESS_EXPIRES_IN || '15m',
             cookieName: 'access_token',
-            maxAge: 15 * 60 * 1000, // 15 minutes
+            maxAge: 15 * 60 * 1000, 
         },
-        // Refresh Token - Thoi han dai (7 ngay)
+        
         refreshToken: {
             secret: process.env.JWT_REFRESH_SECRET || 'refresh-token-secret-change-in-production',
             expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
             cookieName: 'refresh_token',
-            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+            maxAge: 7 * 24 * 60 * 60 * 1000, 
         },
     },
 };

@@ -13,11 +13,10 @@ class AuthService {
     }
 
     /**
-     * Dang nhap voi username/email va password
-     * @param {string} identifier - Username hoac email
-     * @param {string} password - Password nguyen ban
-     * @param {Object} metadata - { ip, userAgent }
-     * @returns {Promise<Object>} User object, access token, refresh token
+     * @param {string} identifier
+     * @param {string} password
+     * @param {Object} metadata
+     * @returns {Promise<Object>}
      */
     login = async (identifier, password, metadata = {}) => {
         try {
@@ -91,7 +90,6 @@ class AuthService {
     }
 
     /**
-     * Refresh access token bang refresh token
      * @param {string} refreshToken - Refresh token
      * @param {Object} metadata - { ip, userAgent }
      * @returns {Promise<Object>} Access token moi va refresh token moi
@@ -169,7 +167,6 @@ class AuthService {
     }
 
     /**
-     * Logout - Revoke refresh token va blacklist access token
      * @param {string} userId - User ID
      * @param {string} accessToken - Access token can blacklist
      * @param {string} refreshToken - Refresh token can revoke
@@ -202,21 +199,19 @@ class AuthService {
                 error: error.message,
                 userId 
             });
-            // Khong throw error, van cho logout thanh cong
         }
     }
 
     /**
-     * Verify access token va kiem tra blacklist
-     * @param {string} token - Access token
-     * @returns {Promise<Object>} User object
+     * @param {string} token 
+     * @returns {Promise<Object>}
      */
     verifyAccessToken = async (token) => {
         try {
             // Verify JWT signature va expiry
             const decoded = TokenUtils.verifyAccessToken(token);
 
-            // Kiem tra token co bi blacklist khong
+            // Kiem tra token co bi blacklist 
             const tokenHash = TokenUtils.hashToken(token);
             if (this.blacklist.isBlacklisted(tokenHash)) {
                 throw new ApiError(401, 'Token da bi vo hieu hoa');
@@ -247,9 +242,8 @@ class AuthService {
     }
 
     /**
-     * Generate Access Token (JWT)
-     * @param {Object} user - User object
-     * @returns {string} JWT token
+     * @param {Object} user
+     * @returns {string}
      */
     generateAccessToken = (user) => {
         const payload = {
@@ -263,15 +257,13 @@ class AuthService {
     }
 
     /**
-     * Luu refresh token vao database
-     * @param {string} userId - User ID
-     * @param {string} refreshToken - Refresh token
-     * @param {Object} metadata - { ip, userAgent }
+     * @param {string} userId 
+     * @param {string} refreshToken 
+     * @param {Object} metadata 
      */
     saveRefreshToken = async (userId, refreshToken, metadata = {}) => {
         const tokenHash = TokenUtils.hashToken(refreshToken);
-        const expiresAt = new Date();
-        expiresAt.setDate(expiresAt.getDate() + 7); // 7 days
+        const expiresAt = new Date(Date.now() + config.jwt.refreshToken.maxAge);
 
         await this.db.from('refresh_tokens').insert({
             user_id: userId,
@@ -283,8 +275,7 @@ class AuthService {
     }
 
     /**
-     * Revoke refresh token
-     * @param {string} tokenId - Token ID trong database
+     * @param {string} tokenId
      */
     revokeRefreshToken = async (tokenId) => {
         await this.db
@@ -294,8 +285,7 @@ class AuthService {
     }
 
     /**
-     * Revoke tat ca refresh tokens cua user (logout all devices)
-     * @param {string} userId - User ID
+     * @param {string} userId 
      */
     revokeAllRefreshTokens = async (userId) => {
         await this.db
@@ -306,8 +296,7 @@ class AuthService {
     }
 
     /**
-     * Cap nhat thoi gian dang nhap cuoi cung
-     * @param {string} userId - User ID
+     * @param {string} userId 
      */
     updateLastLogin = async (userId) => {
         try {
@@ -324,13 +313,22 @@ class AuthService {
     }
 
     /**
-     * Loai bo sensitive fields tu user object
      * @param {Object} user - User object
      * @returns {Object} Sanitized user object
      */
     sanitizeUser = (user) => {
         const { password_hash, ...sanitizedUser } = user;
         return sanitizedUser;
+    }
+
+    blacklistAccessToken = (accessToken) => {
+        if (!accessToken) return;
+        const tokenHash = TokenUtils.hashToken(accessToken);
+        const remainingTime = TokenUtils.getTokenRemainingTime(accessToken);
+        if (remainingTime > 0) {
+            const expiryTimestamp = Math.floor(Date.now() / 1000) + remainingTime;
+            this.blacklist.add(tokenHash, expiryTimestamp);
+        }
     }
 }
 

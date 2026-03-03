@@ -1,8 +1,25 @@
 require('dotenv').config();
 
+const path = require('path');
+const express = require('express');
 const app = require('./src/app');
 const logger = require('./src/utils/logger');
 const config = require('./src/config');
+const { invalidate } = require('./src/utils/cache');
+const tokenBlacklistService = require('./src/services/tokenBlacklistService');
+
+// ===== STATIC FILES (Production standalone mode) =====
+if (config.isProduction) {
+    app.use(express.static(config.staticPath, {
+        maxAge: '7d',
+        etag: true,
+        lastModified: true,
+    }));
+
+    app.get('*', (req, res) => {
+        res.sendFile(path.join(config.staticPath, 'index.html'));
+    });
+}
 
 const PORT = config.port;
 
@@ -18,14 +35,14 @@ const shutdown = (signal) => {
     server.close(async () => {
         logger.info('HTTP server da dong. Giai phong resources...');
 
-        // Xoa cache truoc khi tat
         try {
-            const { invalidate } = require('./src/utils/cache');
             invalidate();
             logger.info('Cache da duoc xoa');
         } catch (err) {
             logger.warn('Loi khi xoa cache', { error: err.message });
         }
+
+        tokenBlacklistService.destroy();
 
         logger.info('Shutdown hoan tat. Tam biet!');
         process.exit(0);

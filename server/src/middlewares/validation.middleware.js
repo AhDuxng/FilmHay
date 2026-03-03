@@ -9,7 +9,7 @@ const handleValidationErrors = (req, res, next) => {
     
     if (!errors.isEmpty()) {
         const firstError = errors.array()[0];
-        throw new ApiError(400, firstError.msg);
+        return next(new ApiError(400, firstError.msg));
     }
     
     next();

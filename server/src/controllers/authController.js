@@ -7,10 +7,6 @@ class AuthController {
         this.authService = authService;
     }
 
-    /**
-     * POST /api/auth/login
-     * Dang nhap voi username/email va password
-     */
     login = async (req, res, next) => {
         try {
             const { identifier, password } = req.body;
@@ -43,8 +39,6 @@ class AuthController {
                 message: 'Dang nhap thanh cong',
                 data: {
                     user: result.user,
-                    accessToken: result.accessToken,
-                    refreshToken: result.refreshToken,
                 },
             });
         } catch (error) {
@@ -52,10 +46,6 @@ class AuthController {
         }
     }
 
-    /**
-     * POST /api/auth/logout
-     * Dang xuat - revoke tokens va xoa cookies
-     */
     logout = async (req, res, next) => {
         try {
             const userId = req.user?.id;
@@ -67,7 +57,7 @@ class AuthController {
             // Revoke tokens
             await this.authService.logout(userId, accessToken, refreshToken);
 
-            // Clear cookies - su dung same options de dam bao xoa duoc
+            // Clear cookies 
             res.clearCookie(
                 config.jwt.accessToken.cookieName,
                 TokenUtils.getCookieOptions('access')
@@ -89,34 +79,13 @@ class AuthController {
         }
     }
 
-    /**
-     * GET /api/auth/me
-     * Lay thong tin user hien tai (da authenticate)
-     */
-    getCurrentUser = async (req, res, next) => {
-        try {
-            if (!req.user) {
-                return res.status(401).json({
-                    success: false,
-                    message: 'Chua dang nhap',
-                });
-            }
-
-            return res.status(200).json({
-                success: true,
-                data: {
-                    user: req.user,
-                },
-            });
-        } catch (error) {
-            next(error);
-        }
+    getCurrentUser = (req, res) => {
+        return res.status(200).json({
+            success: true,
+            data: { user: req.user },
+        });
     }
 
-    /**
-     * POST /api/auth/verify
-     * Verify access token
-     */
     verifyToken = async (req, res, next) => {
         try {
             const token = TokenUtils.extractToken(req, 'access');
@@ -183,8 +152,6 @@ class AuthController {
                 message: 'Token da duoc refresh',
                 data: {
                     user: result.user,
-                    accessToken: result.accessToken,
-                    refreshToken: result.refreshToken,
                 },
             });
         } catch (error) {
@@ -212,14 +179,7 @@ class AuthController {
 
             // Blacklist access token hien tai
             const accessToken = TokenUtils.extractToken(req, 'access');
-            if (accessToken) {
-                const tokenHash = TokenUtils.hashToken(accessToken);
-                const remainingTime = TokenUtils.getTokenRemainingTime(accessToken);
-                if (remainingTime > 0) {
-                    const expiryTimestamp = Math.floor(Date.now() / 1000) + remainingTime;
-                    this.authService.blacklist.add(tokenHash, expiryTimestamp);
-                }
-            }
+            this.authService.blacklistAccessToken(accessToken);
 
             // Clear cookies
             res.clearCookie(
@@ -243,9 +203,6 @@ class AuthController {
         }
     }
 
-    /**
-     * Health check endpoint
-     */
     healthCheck = async (req, res) => {
         return res.status(200).json({
             success: true,
@@ -256,6 +213,5 @@ class AuthController {
     }
 }
 
-// Export singleton voi DI
 const authService = require('../services/authService');
 module.exports = new AuthController(authService);

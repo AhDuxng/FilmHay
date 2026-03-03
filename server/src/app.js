@@ -2,7 +2,6 @@ const express = require('express');
 const compression = require('compression');
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
-const path = require('path');
 
 const config = require('./config');
 const { helmetMiddleware, corsMiddleware } = require('./middlewares/security');
@@ -46,20 +45,6 @@ app.use(morgan(morganFormat, {
 
 // ===== API ROUTES =====
 app.use('/api', routes);
-
-// ===== STATIC FILES (Production) =====
-if (config.isProduction) {
-    app.use(express.static(config.staticPath, {
-        maxAge: '7d',        // Browser cache 7 ngay cho static files
-        etag: true,
-        lastModified: true,
-    }));
-
-    // SPA fallback - moi route khong phai API deu tra ve index.html
-    app.get('*', (req, res) => {
-        res.sendFile(path.join(config.staticPath, 'index.html'));
-    });
-}
 
 // ===== ERROR HANDLING =====
 app.use(notFoundHandler);

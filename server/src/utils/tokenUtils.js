@@ -25,10 +25,6 @@ class TokenUtils {
             }
         }
 
-        if (!token && req.body?.token) {
-            token = req.body.token;
-        }
-
         return token;
     }
 

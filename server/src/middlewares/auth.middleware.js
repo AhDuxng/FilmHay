@@ -1,9 +1,27 @@
-const config = require('../config');
+const { LRUCache } = require('lru-cache');
 const supabase = require('../config/supabase.config');
 const ApiError = require('../utils/ApiError');
 const logger = require('../utils/logger');
 const TokenUtils = require('../utils/tokenUtils');
 const tokenBlacklistService = require('../services/tokenBlacklistService');
+
+const userCache = new LRUCache({ max: 500, ttl: 60_000 });
+
+const loadUser = async (userId) => {
+    const cached = userCache.get(userId);
+    if (cached) return cached;
+
+    const { data: user, error } = await supabase
+        .from('users')
+        .select('id, username, email, full_name, role, is_active')
+        .eq('id', userId)
+        .single();
+
+    if (error || !user) return null;
+
+    userCache.set(userId, user);
+    return user;
+};
 
 /**
  * Middleware xac thuc - Verify JWT token
@@ -14,24 +32,18 @@ const authenticate = async (req, res, next) => {
         const token = TokenUtils.extractToken(req, 'access');
 
         if (!token) {
-            logger.warn('Truy cap khong duoc xac thuc', {
+            logger.warn('Unauthenticated access', {
                 path: req.path,
                 method: req.method,
                 ip: TokenUtils.getClientIp(req),
             });
-            return res.status(401).json({
-                success: false,
-                message: 'Vui long dang nhap de tiep tuc',
-            });
+            return next(new ApiError(401, 'Vui long dang nhap de tiep tuc'));
         }
 
         // Kiem tra blacklist truoc khi verify
         const tokenHash = TokenUtils.hashToken(token);
         if (tokenBlacklistService.isBlacklisted(tokenHash)) {
-            return res.status(401).json({
-                success: false,
-                message: 'Token da bi vo hieu hoa. Vui long dang nhap lai',
-            });
+            return next(new ApiError(401, 'Token da bi vo hieu hoa. Vui long dang nhap lai'));
         }
 
         // Verify token
@@ -39,78 +51,50 @@ const authenticate = async (req, res, next) => {
         try {
             decoded = TokenUtils.verifyAccessToken(token);
         } catch (error) {
-            return res.status(401).json({
-                success: false,
-                message: error.message || 'Token khong hop le',
-            });
+            return next(new ApiError(401, error.message || 'Token khong hop le'));
         }
 
         // Lay thong tin user tu database
-        const { data: user, error } = await supabase
-            .from('users')
-            .select('id, username, email, full_name, role, is_active')
-            .eq('id', decoded.userId)
-            .single();
+        const user = await loadUser(decoded.userId);
 
-        if (error || !user) {
-            logger.warn('User khong ton tai', { userId: decoded.userId });
-            return res.status(401).json({
-                success: false,
-                message: 'Nguoi dung khong ton tai',
-            });
+        if (!user) {
+            logger.warn('User not found', { userId: decoded.userId });
+            return next(new ApiError(401, 'Nguoi dung khong ton tai'));
         }
 
         if (!user.is_active) {
-            logger.warn('User da bi vo hieu hoa', { userId: user.id });
-            return res.status(403).json({
-                success: false,
-                message: 'Tai khoan da bi vo hieu hoa',
-            });
+            logger.warn('Disabled user access attempt', { userId: user.id });
+            return next(new ApiError(403, 'Tai khoan da bi vo hieu hoa'));
         }
 
         // Gan user vao request
         req.user = user;
         req.token = token;
-
         next();
     } catch (error) {
-        logger.error('Loi trong auth middleware', {
-            error: error.message,
-            stack: error.stack,
-        });
-        return res.status(500).json({
-            success: false,
-            message: 'Loi he thong khi xac thuc',
-        });
+        logger.error('Auth middleware error', { error: error.message, stack: error.stack });
+        next(new ApiError(500, 'Loi he thong khi xac thuc'));
     }
 };
 
 /**
  * Middleware kiem tra role
  */
-const requireRole = (...allowedRoles) => {
-    return (req, res, next) => {
-        if (!req.user) {
-            return res.status(401).json({
-                success: false,
-                message: 'Chua dang nhap',
-            });
-        }
+const requireRole = (...allowedRoles) => (req, res, next) => {
+    if (!req.user) {
+        return next(new ApiError(401, 'Chua dang nhap'));
+    }
 
-        if (!allowedRoles.includes(req.user.role)) {
-            logger.warn('Truy cap bi tu choi - Khong du quyen', {
-                userId: req.user.id,
-                userRole: req.user.role,
-                requiredRoles: allowedRoles,
-            });
-            return res.status(403).json({
-                success: false,
-                message: 'Ban khong co quyen truy cap chuc nang nay',
-            });
-        }
+    if (!allowedRoles.includes(req.user.role)) {
+        logger.warn('Access denied - insufficient role', {
+            userId: req.user.id,
+            userRole: req.user.role,
+            requiredRoles: allowedRoles,
+        });
+        return next(new ApiError(403, 'Ban khong co quyen truy cap chuc nang nay'));
+    }
 
-        next();
-    };
+    next();
 };
 
 /**
@@ -121,35 +105,28 @@ const optionalAuth = async (req, res, next) => {
         const token = TokenUtils.extractToken(req, 'access');
 
         if (token) {
-            try {
-                // Kiem tra blacklist
-                const tokenHash = TokenUtils.hashToken(token);
-                if (!tokenBlacklistService.isBlacklisted(tokenHash)) {
+            // Kiem tra blacklist
+            const tokenHash = TokenUtils.hashToken(token);
+            if (!tokenBlacklistService.isBlacklisted(tokenHash)) {
+                try {
                     const decoded = TokenUtils.verifyAccessToken(token);
-                    const { data: user } = await supabase
-                        .from('users')
-                        .select('id, username, email, full_name, role, is_active')
-                        .eq('id', decoded.userId)
-                        .single();
-
-                    if (user && user.is_active) {
+                    const user = await loadUser(decoded.userId);
+                    if (user?.is_active) {
                         req.user = user;
                         req.token = token;
                     }
+                } catch {
+                    // Khong lam gi, van cho qua
                 }
-            } catch (error) {
-                // Khong lam gi, van cho qua
             }
         }
 
         next();
-    } catch (error) {
+    } catch {
         next();
     }
 };
 
-module.exports = {
-    authenticate,
-    requireRole,
-    optionalAuth,
-};
+const invalidateUserCache = (userId) => userCache.delete(userId);
+
+module.exports = { authenticate, requireRole, optionalAuth, invalidateUserCache };

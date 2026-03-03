@@ -4,7 +4,6 @@ const { getStats } = require('../utils/cache');
 
 /**
  * Wrapper async cho controller
- * Tu dong bat error va chuyen cho errorHandler
  */
 const asyncHandler = (fn) => (req, res, next) => {
     Promise.resolve(fn(req, res, next)).catch(next);
@@ -101,7 +100,7 @@ const getCountryList = asyncHandler(async (req, res) => {
     res.json({ success: true, data });
 });
 
-// GET /api/health - Kiểm tra sức khỏe server
+// GET /api/health
 const healthCheck = asyncHandler(async (req, res) => {
     const cacheStats = getStats();
     res.json({

@@ -1,7 +1,3 @@
-/**
- * Custom API Error class
- * Tao loi co cau truc chuan de xu ly tap trung
- */
 class ApiError extends Error {
     /**
      * @param {number} statusCode - HTTP status code

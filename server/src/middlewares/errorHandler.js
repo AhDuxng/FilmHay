@@ -1,11 +1,7 @@
 const logger = require('../utils/logger');
 const config = require('../config');
 
-/**
- * Middleware xu ly loi tap trung
- * Pattern: Centralized Error Handler
- * Moi loi trong app deu chay qua day
- */
+
 const errorHandler = (err, req, res, _next) => {
     // Mac dinh
     let statusCode = err.statusCode || 500;

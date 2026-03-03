@@ -8,15 +8,15 @@ const helmetMiddleware = helmet({
     contentSecurityPolicy: config.isProduction ? undefined : false,
 });
 
-// CORS - chi cho phep client URL, chi GET method (read-only API)
+// CORS - chi cho phep client URL
 const corsMiddleware = cors({
     origin: config.isProduction
         ? config.cors.origin
         : [config.cors.origin, 'http://localhost:3000', 'http://localhost:5173'],
-    methods: ['GET'],
-    allowedHeaders: ['Content-Type'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
-    maxAge: 86400, // Pre-flight cache 24h
+    maxAge: 86400,
 });
 
 module.exports = { helmetMiddleware, corsMiddleware };

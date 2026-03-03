@@ -20,10 +20,10 @@ router.get('/tv-shows', movieController.getTVShows);
 // Chi tiet phim
 router.get('/detail/:slug', movieController.getMovieDetail);
 
-// Tim kiem - ap dung rate limit nghiem ngat hon
+// Tim kiem
 router.get('/search', searchLimiter, movieController.searchMovies);
 
-// Goi y tim kiem nhanh - rate limit rieng, cho phep nhieu hon
+// Goi y tim kiem nhanh
 router.get('/suggest', suggestLimiter, movieController.suggestMovies);
 
 // Danh sách thể loại / quốc gia

@@ -21,10 +21,10 @@ const globalLimiter = rateLimit({
     },
 });
 
-// Rate limiter nghiem ngat hon cho API search (de phong spam)
+// Rate limiter 
 const searchLimiter = rateLimit({
-    windowMs: 60_000,  // 1 phut
-    max: 30,           // 30 request/phut cho search
+    windowMs: 60_000,  
+    max: 30,           
     standardHeaders: true,
     legacyHeaders: false,
     message: {
@@ -33,10 +33,10 @@ const searchLimiter = rateLimit({
     },
 });
 
-// Rate limiter rieng cho suggest - cho phep nhieu hon vi user go tung ky tu
+// Rate limiter rieng cho suggest 
 const suggestLimiter = rateLimit({
-    windowMs: 60_000,  // 1 phut
-    max: 60,           // 60 request/phut cho suggest
+    windowMs: 60_000,  
+    max: 60,           
     standardHeaders: true,
     legacyHeaders: false,
     message: {
@@ -45,7 +45,7 @@ const suggestLimiter = rateLimit({
     },
 });
 
-// Factory function de tao custom rate limiter
+// custom rate limiter
 const createRateLimiter = (options = {}) => {
     const defaultOptions = {
         windowMs: 60_000,
