@@ -4,15 +4,10 @@ import { getPosterUrl, getThumbUrl } from '../../utils/constants';
 import { handleImageError, scrollToTop } from '../../utils/helpers';
 import PlayIcon from './PlayIcon';
 
-/**
- * The phim - dung memo tranh re-render khong can thiet
- * Dung o tat ca section: phim bo, phim le, trending...
- * group/group-hover pattern hieu ung hover parent -> child
- */
 const MovieCard = memo(function MovieCard({ movie, landscape = false }) {
     const navigate = useNavigate();
 
-    // Lay thong tin tu movie object (ophim API format)
+    // Lay thong tin tu movie object
     const name = movie?.name || movie?.title || 'Không có tên';
     const slug = movie?.slug || '';
     const posterUrl = movie?.poster_url || movie?.thumb_url || '';

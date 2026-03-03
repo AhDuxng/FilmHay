@@ -17,22 +17,12 @@ const TITLE_MAP = {
     'tv-shows': 'TV Shows',
 };
 
-/**
- * Xac dinh loai route tu pathname
- * /the-loai/:slug -> 'genre'
- * /quoc-gia/:slug -> 'country'
- * /danh-sach/:type -> 'list'
- */
 const getRouteType = (pathname) => {
     if (pathname.startsWith('/the-loai/')) return 'genre';
     if (pathname.startsWith('/quoc-gia/')) return 'country';
     return 'list';
 };
 
-/**
- * Trang danh sach phim theo loai / the loai / quoc gia
- * Tu dong nhan dien route de goi API tuong ung
- */
 function CategoryPage() {
     const { type, slug } = useParams();
     const { pathname } = useLocation();

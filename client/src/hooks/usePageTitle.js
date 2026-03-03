@@ -4,8 +4,6 @@ import { useEffect } from 'react';
 const SITE_NAME = 'PhimHay';
 
 /**
- * Hook cap nhat document.title khi vao trang
- * Tu dong reset ve ten site khi unmount
  * @param {string} title - tieu de trang (VD: 'Phim bo')
  */
 export function usePageTitle(title) {

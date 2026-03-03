@@ -4,9 +4,6 @@ import { getPosterUrl } from '../../utils/constants';
 import { handleImageError, SECTION_PADDING } from '../../utils/helpers';
 import SectionHeader from '../common/SectionHeader';
 
-/**
- * Top 10 section - hien thi so thu tu lon phong cach Netflix
- */
 const Top10Section = memo(function Top10Section({ movies = [] }) {
     const navigate = useNavigate();
     const top10 = movies.slice(0, 10);

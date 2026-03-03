@@ -1,11 +1,6 @@
 import { memo } from 'react';
 import PlayIcon from './PlayIcon';
 
-/**
- * Loading spinner - hieu ung vong tron cinema
- * SVG circle dash animation doi mau primary -> cyan
- * Ho tro fullScreen
- */
 const Loading = memo(function Loading({ fullScreen = false }) {
     return (
         <div className={`flex flex-col items-center justify-center gap-4 ${fullScreen ? 'min-h-screen' : 'min-h-[200px]'}`}>

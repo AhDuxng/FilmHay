@@ -9,16 +9,10 @@ import LiveTVSection from '../components/home/LiveTVSection';
 import Loading from '../components/common/Loading';
 import ErrorState from '../components/common/ErrorState';
 
-/**
- * Trang chu - hien thi tat ca section
- * Goi API /home 1 lan, phan phoi data cho component con
- */
 function HomePage() {
     const { data, loading, error, refetch } = useHomeData();
     usePageTitle('Trang chủ - Xem phim online miễn phí');
 
-    // Parse data tu ophim API response
-    // Phan chia items thanh cac nhom khong trung lap
     const homeData = useMemo(() => {
         if (!data) return null;
         const innerData = data?.data || data;

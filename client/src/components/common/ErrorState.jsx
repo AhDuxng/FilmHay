@@ -2,10 +2,6 @@ import { memo } from 'react';
 import { RETRY_BUTTON_CLASS } from '../../utils/helpers';
 
 /**
- * Trang thai loi dung chung cho tat ca page
- * Hien thi thong bao loi + nut thu lai
- * Dung o: HomePage, MovieDetailPage, SearchPage, CategoryPage
- *
  * @param {string} title - tieu de loi
  * @param {string} message - noi dung loi chi tiet
  * @param {function} onRetry - ham goi khi nhan "Thu lai"

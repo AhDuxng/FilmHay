@@ -1,9 +1,4 @@
 import { Component } from 'react';
-
-/**
- * ErrorBoundary - bat loi render component con
- * Hien thi UI fallback thay vi crash toan bo app
- */
 class ErrorBoundary extends Component {
     constructor(props) {
         super(props);

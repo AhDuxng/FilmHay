@@ -8,9 +8,6 @@ import MovieGrid from '../components/common/MovieGrid';
 import Pagination from '../components/common/Pagination';
 import { parseApiData, PAGE_PADDING } from '../utils/helpers';
 
-/**
- * Trang tim kiem phim
- */
 function SearchPage() {
     const [searchParams] = useSearchParams();
     const keyword = searchParams.get('keyword') || '';

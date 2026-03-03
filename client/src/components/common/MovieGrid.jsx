@@ -2,11 +2,6 @@ import { memo } from 'react';
 import MovieCard from './MovieCard';
 import { MOVIE_GRID_CLASS } from '../../utils/helpers';
 
-/**
- * Grid hien thi danh sach phim dang luoi
- * Responsive: tu dong dieu chinh so cot theo man hinh
- * Dung o: SearchPage, CategoryPage
- */
 const MovieGrid = memo(function MovieGrid({ movies = [] }) {
     if (movies.length === 0) return null;
 

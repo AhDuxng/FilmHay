@@ -1,11 +1,3 @@
-// ===== HELPER FUNCTIONS DUNG CHUNG =====
-// Tap trung cac ham xu ly lap di lap lai o nhieu component
-
-/**
- * Parse response tu ophim API
- * API tra ve nhieu level nested: response.data.data.items
- * Ham nay chuan hoa ve { items, pagination }
- */
 export const parseApiData = (data) => {
     if (!data) return { items: [], pagination: null };
     const innerData = data?.data || data;
@@ -15,19 +7,12 @@ export const parseApiData = (data) => {
     };
 };
 
-/**
- * Xu ly loi khi load hinh anh
- * Thay bang gradient placeholder khi anh bi loi
- * Xoa onError de tranh vong lap vo han
- */
 export const handleImageError = (e) => {
     e.target.onerror = null; // Ngan vong lap: error -> set src -> error
     e.target.style.background = 'linear-gradient(135deg, #1a1a2e, #16213e)';
     e.target.src = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
 };
 
-// ===== LAYOUT CONSTANTS =====
-// Cac class Tailwind dung di dung lai o nhieu section/page
 
 // Gradient placeholder khi hinh anh bi loi hoac chua co
 export const GRADIENT_PLACEHOLDER = 'linear-gradient(135deg, #1a1a2e, #16213e)';

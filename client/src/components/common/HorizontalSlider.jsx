@@ -1,10 +1,6 @@
 import { memo, useRef, useCallback } from 'react';
 
 /**
- * Slider cuon ngang voi mui ten dieu huong
- * Dung o: MovieSection, TrendingSection, LiveTVSection
- * group/slider pattern hieu ung hover hien mui ten
- *
  * @param {number} scrollAmount - so pixel cuon moi lan click (mac dinh 600)
  * @param {ReactNode} children - noi dung ben trong slider
  */

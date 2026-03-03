@@ -1,10 +1,7 @@
 import { memo } from 'react';
 
 /**
- * Icon play (tam giac) SVG dung chung
- * Dung o: MovieCard, HeroCarousel, MovieDetailPage, Loading
- *
- * @param {string} className - class CSS tuy chinh (kich thuoc, mau sac...)
+ * @param {string} className 
  */
 const PlayIcon = memo(function PlayIcon({ className = 'w-5 h-5 fill-current' }) {
     return (

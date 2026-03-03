@@ -1,10 +1,6 @@
 import { memo } from 'react';
 
 /**
- * Phan trang dung chung
- * Ho tro: nut Truoc/Sau, hien thi so trang (tuy chon)
- * Dung o: SearchPage, CategoryPage
- *
  * @param {number} page - trang hien tai
  * @param {number} totalPages - tong so trang
  * @param {function} onPageChange - callback khi doi trang

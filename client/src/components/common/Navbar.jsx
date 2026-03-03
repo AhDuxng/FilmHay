@@ -4,11 +4,6 @@ import { NAV_LINKS } from '../../utils/constants';
 import SearchSuggestions from './SearchSuggestions';
 import { useAuth } from '../../contexts/AuthContext';
 
-/**
- * Navbar - thanh dieu huong chinh
- * Fixed top, doi nen khi cuon, responsive mobile
- * Tich hop goi y tim kiem (autocomplete) khi go thanh search
- */
 function Navbar() {
     const [scrolled, setScrolled] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
@@ -21,7 +16,7 @@ function Navbar() {
     const userMenuRef = useRef(null);
     const { user, logout } = useAuth();
 
-    // Scroll effect - them nen dam khi cuon xuong
+    // them nen dam khi cuon xuong
     useEffect(() => {
         const handleScroll = () => setScrolled(window.scrollY > 50);
         window.addEventListener('scroll', handleScroll, { passive: true });
@@ -30,10 +25,10 @@ function Navbar() {
 
     // Xu ly tim kiem + chuyen keyboard events cho dropdown goi y
     const handleSearch = useCallback((e) => {
-        // Uu tien keyboard nav cua dropdown truoc
+        
         if (suggestKeyDownRef.current) {
             suggestKeyDownRef.current(e);
-            // Neu dropdown da xu ly Enter/ArrowUp/ArrowDown thi khong submit
+            
             if (['ArrowDown', 'ArrowUp'].includes(e.key)) return;
             if (e.key === 'Enter' && e.defaultPrevented) return;
         }
@@ -115,7 +110,7 @@ function Navbar() {
                 ))}
             </div>
 
-            {/* Phan ben phai: search, buttons */}
+            {/* search, buttons */}
             <div className="flex items-center gap-4">
                 {/* Search box + dropdown goi y */}
                 <div className="relative" ref={searchWrapperRef}>
@@ -134,7 +129,7 @@ function Navbar() {
                         />
                     </div>
 
-                    {/* Dropdown goi y tim kiem */}
+                    {/* goi y tim kiem */}
                     <SearchSuggestions
                         query={searchQuery}
                         isFocused={searchFocused}

@@ -4,10 +4,6 @@ import { SECTION_PADDING } from '../../utils/helpers';
 import SectionHeader from '../common/SectionHeader';
 import HorizontalSlider from '../common/HorizontalSlider';
 
-/**
- * Section truyen hinh truc tiep
- * Data tinh (static) vi khong co API live TV
- */
 const LiveTVSection = memo(function LiveTVSection() {
     return (
         <section className={`${SECTION_PADDING} mb-10 relative`}>

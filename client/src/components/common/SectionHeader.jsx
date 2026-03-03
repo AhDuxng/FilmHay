@@ -1,11 +1,6 @@
 import { memo } from 'react';
 import { Link } from 'react-router-dom';
 
-/**
- * Header section dung chung cho cac section trang chu
- * Hien thi thanh accent bar ben trai + tieu de + link "Xem them"
- * Dung o: MovieSection, TrendingSection, Top10Section, LiveTVSection
- */
 const SectionHeader = memo(function SectionHeader({ title, moreLink, moreLinkText = 'Xem thêm →' }) {
     return (
         <div className="flex items-center justify-between mb-4">

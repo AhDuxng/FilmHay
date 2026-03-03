@@ -2,9 +2,6 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { movieApi } from '../services/api';
 
 /**
- * Custom hook goi API phim
- * Tu dong xu ly loading, error, data
- * Ho tro AbortController cancel request khi unmount / re-fetch
  * @param {Function} apiMethod - ham goi API
  * @param {Array} params - tham so truyen vao apiMethod
  * @param {Array} dependencies - dependency array cho useEffect

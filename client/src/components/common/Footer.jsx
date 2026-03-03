@@ -1,10 +1,6 @@
 import { memo } from 'react';
 import { Link } from 'react-router-dom';
 
-/**
- * Footer - chan trang voi thong tin lien he, the loai, social
- * Responsive: 4 cot -> 2 cot -> 1 cot
- */
 const Footer = memo(function Footer() {
     return (
         <footer className="bg-surface mt-15 px-12 max-lg:px-6 max-md:px-4 pt-12 max-lg:pt-10 max-md:pt-8 pb-6 max-md:pb-4">

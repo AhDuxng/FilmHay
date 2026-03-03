@@ -46,7 +46,6 @@ api.interceptors.response.use(
     }
 );
 
-// ===== MOVIE API =====
 export const movieApi = {
     // Trang chu
     getHome: () => api.get('/movies/home'),

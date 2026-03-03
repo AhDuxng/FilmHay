@@ -4,11 +4,6 @@ import SectionHeader from '../common/SectionHeader';
 import HorizontalSlider from '../common/HorizontalSlider';
 import { SECTION_PADDING } from '../../utils/helpers';
 
-/**
- * Section phim voi slider ngang
- * Dung cho: phim bo, phim le, hanh dong, tinh cam, hoat hinh...
- * group/slider pattern hieu ung hover hien mui ten
- */
 const MovieSection = memo(function MovieSection({
     title,
     movies = [],

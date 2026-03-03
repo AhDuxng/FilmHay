@@ -12,11 +12,6 @@ import PlayIcon from '../components/common/PlayIcon';
 // So tap hien thi moi trang (range tab)
 const EPISODES_PER_RANGE = 30;
 
-/**
- * Trang chi tiet phim - thiet ke kieu VieON
- * Video player tren cung, thong tin phim ben duoi, danh sach tap card ngang
- * group/ep pattern hieu ung hover card tap phim
- */
 function MovieDetailPage() {
     const { slug } = useParams();
     const { data, loading, error, refetch } = useMovieDetail(slug);

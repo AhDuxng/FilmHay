@@ -6,11 +6,6 @@ import { getPosterUrl } from '../../utils/constants';
 import { handleImageError, scrollToTop } from '../../utils/helpers';
 
 /**
- * SearchSuggestions - dropdown goi y phim khi user go thanh tim kiem
- * Debounce 400ms tranh goi API lien tuc, hien toi da 8 ket qua
- * Ho tro keyboard navigation (ArrowUp, ArrowDown, Enter, Escape)
- * Click outside tu dong dong dropdown
- *
  * @param {string} query - tu khoa tim kiem hien tai
  * @param {boolean} isFocused - input dang duoc focus hay khong
  * @param {function} onSelect - callback khi chon 1 goi y (reset input)
@@ -107,7 +102,6 @@ const SearchSuggestions = memo(function SearchSuggestions({ query, isFocused, on
         }
     }, [suggestions, activeIndex, handleSelect]);
 
-    // Expose handleKeyDown ra parent (Navbar input)
     useEffect(() => {
         if (exposeKeyDown) exposeKeyDown(handleKeyDown);
     }, [handleKeyDown, exposeKeyDown]);

@@ -5,11 +5,6 @@ import HorizontalSlider from '../common/HorizontalSlider';
 import { CATEGORY_TABS } from '../../utils/constants';
 import { SECTION_PADDING } from '../../utils/helpers';
 
-/**
- * Trending section - co category tabs de loc theo quoc gia
- * Filter client-side tu data home API (khong goi API rieng)
- * group/slider pattern cho mui ten
- */
 const TrendingSection = memo(function TrendingSection({ movies = [] }) {
     const [activeTab, setActiveTab] = useState('all');
 

@@ -3,11 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { getPosterUrl, getThumbUrl } from '../../utils/constants';
 import PlayIcon from '../common/PlayIcon';
 
-/**
- * HeroCarousel - banner chinh trang chu
- * Tu dong chuyen slide, hover thi dung
- * group/hero pattern hieu ung hover hien mui ten
- */
 function HeroCarousel({ movies = [] }) {
     const [currentSlide, setCurrentSlide] = useState(0);
     const autoSlideRef = useRef(null);
@@ -64,7 +59,7 @@ function HeroCarousel({ movies = [] }) {
                         />
                         <div className="absolute bottom-1/4 left-12 max-md:left-4 max-w-[550px] max-md:max-w-none max-md:right-4 z-[2]">
                             <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-primary/90 rounded-[3px] text-[11px] font-bold uppercase tracking-wide mb-4">
-                                🔥 PhimHay
+                                PhimHay
                             </div>
                             <h1 className="text-5xl max-lg:text-4xl max-md:text-[28px] font-black leading-[1.1] mb-3 drop-shadow-[0_2px_20px_rgba(0,0,0,0.5)]">
                                 Đang tải phim...
@@ -124,7 +119,7 @@ function HeroCarousel({ movies = [] }) {
                             {/* Noi dung slide */}
                             <div className="absolute bottom-1/4 max-md:bottom-[20%] left-12 max-lg:left-6 max-md:left-4 max-w-[550px] max-lg:max-w-[420px] max-md:max-w-none max-md:right-4 z-[2]">
                                 <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-primary/90 rounded-[3px] text-[11px] font-bold uppercase tracking-wide mb-4">
-                                    {index === 0 ? '🔥 Độc quyền' : index === 1 ? '🎬 Phim mới' : '⭐ HOT'}
+                                    {index === 0 ? 'Độc quyền' : index === 1 ? 'Phim mới' : 'HOT'}
                                 </div>
 
                                 <h1 className="text-5xl max-lg:text-4xl max-md:text-[28px] font-black leading-[1.1] mb-3 drop-shadow-[0_2px_20px_rgba(0,0,0,0.5)]">

@@ -1,35 +1,27 @@
 import { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 
-/**
- * PageTransition - hieu ung logo khi chuyen trang
- * Hien logo voi animation scale + fade, sau do slide out
- */
 function PageTransition() {
     const location = useLocation();
     const [isAnimating, setIsAnimating] = useState(false);
-    const [phase, setPhase] = useState('idle'); // idle | enter | exit
+    const [phase, setPhase] = useState('idle');
     const prevPath = useRef(location.pathname);
     const timeoutRef = useRef(null);
 
     useEffect(() => {
-        // Bo qua lan mount dau tien
         if (prevPath.current === location.pathname) return;
         prevPath.current = location.pathname;
 
-        // Bat dau hieu ung chuyen trang
+        // hieu ung chuyen trang
         setIsAnimating(true);
         setPhase('enter');
 
-        // Scroll len dau trang ngay lap tuc
         window.scrollTo({ top: 0, behavior: 'instant' });
 
-        // Sau 600ms -> phase exit (logo bay di)
         timeoutRef.current = setTimeout(() => {
             setPhase('exit');
         }, 600);
 
-        // Sau 1000ms -> ket thuc
         const exitTimeout = setTimeout(() => {
             setIsAnimating(false);
             setPhase('idle');
