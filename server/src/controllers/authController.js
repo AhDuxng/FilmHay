@@ -1,122 +1,114 @@
 const config = require('../config');
 const logger = require('../utils/logger');
 const TokenUtils = require('../utils/tokenUtils');
-const authService = require('../services/authService');
+const catchAsync = require('../utils/catchAsync');
+const { TOKEN_TYPES } = require('../utils/constants');
 
-// Helper: set token cookies vao response
 const setTokenCookies = (res, accessToken, refreshToken) => {
-    res.cookie(config.jwt.accessToken.cookieName, accessToken, TokenUtils.getCookieOptions('access'));
-    res.cookie(config.jwt.refreshToken.cookieName, refreshToken, TokenUtils.getCookieOptions('refresh'));
+    res.cookie(config.jwt.accessToken.cookieName, accessToken, TokenUtils.getCookieOptions(TOKEN_TYPES.ACCESS));
+    res.cookie(config.jwt.refreshToken.cookieName, refreshToken, TokenUtils.getCookieOptions(TOKEN_TYPES.REFRESH));
 };
 
-// Helper: xoa token cookies
 const clearTokenCookies = (res) => {
-    res.clearCookie(config.jwt.accessToken.cookieName, TokenUtils.getCookieOptions('access'));
-    res.clearCookie(config.jwt.refreshToken.cookieName, TokenUtils.getCookieOptions('refresh'));
+    res.clearCookie(config.jwt.accessToken.cookieName, TokenUtils.getCookieOptions(TOKEN_TYPES.ACCESS));
+    res.clearCookie(config.jwt.refreshToken.cookieName, TokenUtils.getCookieOptions(TOKEN_TYPES.REFRESH));
 };
 
-// Helper: lay metadata tu request
 const getMetadata = (req) => ({
     ip: TokenUtils.getClientIp(req),
     userAgent: TokenUtils.getUserAgent(req),
 });
 
 class AuthController {
-    login = async (req, res, next) => {
-        try {
-            const { identifier, password } = req.body;
-            const result = await authService.login(identifier, password, getMetadata(req));
+    constructor(authService) {
+        this.authService = authService;
 
-            setTokenCookies(res, result.accessToken, result.refreshToken);
+        // Bind tat ca route handlers voi catchAsync
+        this.login = catchAsync(this.login.bind(this));
+        this.logout = catchAsync(this.logout.bind(this));
+        this.verifyToken = catchAsync(this.verifyToken.bind(this));
+        this.refreshToken = catchAsync(this.refreshToken.bind(this));
+        this.logoutAll = catchAsync(this.logoutAll.bind(this));
+        this.getCurrentUser = this.getCurrentUser.bind(this);
+        this.healthCheck = this.healthCheck.bind(this);
+    }
 
-            res.json({
-                success: true,
-                message: 'Dang nhap thanh cong',
-                data: { user: result.user },
-            });
-        } catch (err) {
-            next(err);
+    async login(req, res) {
+        const { identifier, password } = req.body;
+        const result = await this.authService.login(identifier, password, getMetadata(req));
+
+        setTokenCookies(res, result.accessToken, result.refreshToken);
+
+        res.json({
+            success: true,
+            message: 'Dang nhap thanh cong',
+            data: { user: result.user },
+        });
+    }
+
+    async logout(req, res) {
+        const accessToken = TokenUtils.extractToken(req, TOKEN_TYPES.ACCESS);
+        const refreshToken = TokenUtils.extractToken(req, TOKEN_TYPES.REFRESH);
+
+        await this.authService.logout(req.user?.id, accessToken, refreshToken);
+        clearTokenCookies(res);
+
+        res.json({ success: true, message: 'Dang xuat thanh cong' });
+    }
+
+    getCurrentUser(req, res) {
+        res.json({ success: true, data: { user: req.user } });
+    }
+
+    async verifyToken(req, res) {
+        const token = TokenUtils.extractToken(req, TOKEN_TYPES.ACCESS);
+        if (!token) {
+            return res.status(401).json({ success: false, message: 'Khong tim thay token' });
         }
+
+        const user = await this.authService.verifyAccessToken(token);
+        res.json({ success: true, message: 'Token hop le', data: { user } });
     }
 
-    logout = async (req, res, next) => {
-        try {
-            const accessToken = TokenUtils.extractToken(req, 'access');
-            const refreshToken = TokenUtils.extractToken(req, 'refresh');
-
-            await authService.logout(req.user?.id, accessToken, refreshToken);
-            clearTokenCookies(res);
-
-            res.json({ success: true, message: 'Dang xuat thanh cong' });
-        } catch (err) {
-            next(err);
+    async refreshToken(req, res) {
+        const refreshToken = TokenUtils.extractToken(req, TOKEN_TYPES.REFRESH);
+        if (!refreshToken) {
+            return res.status(401).json({ success: false, message: 'Khong tim thay refresh token' });
         }
+
+        const result = await this.authService.refreshAccessToken(refreshToken, getMetadata(req));
+        setTokenCookies(res, result.accessToken, result.refreshToken);
+
+        res.json({
+            success: true,
+            message: 'Token da duoc refresh',
+            data: { user: result.user },
+        });
     }
 
-    getCurrentUser = (_req, res) => {
-        res.json({ success: true, data: { user: _req.user } });
-    }
-
-    verifyToken = async (req, res, next) => {
-        try {
-            const token = TokenUtils.extractToken(req, 'access');
-            if (!token) {
-                return res.status(401).json({ success: false, message: 'Khong tim thay token' });
-            }
-
-            const user = await authService.verifyAccessToken(token);
-            res.json({ success: true, message: 'Token hop le', data: { user } });
-        } catch (err) {
-            next(err);
+    async logoutAll(req, res) {
+        const userId = req.user?.id;
+        if (!userId) {
+            return res.status(401).json({ success: false, message: 'Chua dang nhap' });
         }
+
+        await this.authService.revokeAllRefreshTokens(userId);
+        this.authService.blacklistAccessToken(TokenUtils.extractToken(req, TOKEN_TYPES.ACCESS));
+        clearTokenCookies(res);
+
+        logger.info('Logout tat ca devices', { userId });
+        res.json({ success: true, message: 'Da dang xuat khoi tat ca thiet bi' });
     }
 
-    refreshToken = async (req, res, next) => {
-        try {
-            const refreshToken = TokenUtils.extractToken(req, 'refresh');
-            if (!refreshToken) {
-                return res.status(401).json({ success: false, message: 'Khong tim thay refresh token' });
-            }
-
-            const result = await authService.refreshAccessToken(refreshToken, getMetadata(req));
-            setTokenCookies(res, result.accessToken, result.refreshToken);
-
-            res.json({
-                success: true,
-                message: 'Token da duoc refresh',
-                data: { user: result.user },
-            });
-        } catch (err) {
-            next(err);
-        }
-    }
-
-    logoutAll = async (req, res, next) => {
-        try {
-            const userId = req.user?.id;
-            if (!userId) {
-                return res.status(401).json({ success: false, message: 'Chua dang nhap' });
-            }
-
-            await authService.revokeAllRefreshTokens(userId);
-            authService._blacklistAccessToken(TokenUtils.extractToken(req, 'access'));
-            clearTokenCookies(res);
-
-            logger.info('Logout tat ca devices', { userId });
-            res.json({ success: true, message: 'Da dang xuat khoi tat ca thiet bi' });
-        } catch (err) {
-            next(err);
-        }
-    }
-
-    healthCheck = (_req, res) => {
+    healthCheck(_req, res) {
         res.json({
             success: true,
             message: 'Auth service hoat dong binh thuong',
             timestamp: new Date().toISOString(),
-            blacklistSize: authService.blacklist.size(),
+            blacklistSize: this.authService.blacklist.size(),
         });
     }
 }
 
-module.exports = new AuthController();
+const authService = require('../services/authService');
+module.exports = new AuthController(authService);

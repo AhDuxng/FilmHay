@@ -3,7 +3,7 @@ export const parseApiData = (data) => {
     const innerData = data?.data || data;
     return {
         items: innerData?.items || [],
-        pagination: innerData?.params?.pagination || null,
+        pagination: innerData?.pagination || innerData?.params?.pagination || null,
     };
 };
 

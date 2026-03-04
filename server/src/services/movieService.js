@@ -3,6 +3,7 @@ const config = require('../config');
 const logger = require('../utils/logger');
 const { getOrSet } = require('../utils/cache');
 const ApiError = require('../utils/ApiError');
+const { KEYWORD } = require('../utils/constants');
 
 const ophimClient = axios.create({
     baseURL: config.ophim.baseUrl,
@@ -69,8 +70,8 @@ const searchMovies = async (keyword, page = 1) => {
     if (!keyword || typeof keyword !== 'string') {
         throw ApiError.badRequest('Tu khoa tim kiem khong hop le');
     }
-    const safe = keyword.trim().substring(0, 100);
-    if (safe.length < 1) throw ApiError.badRequest('Tu khoa tim kiem qua ngan');
+    const safe = keyword.trim().substring(0, KEYWORD.SEARCH_MAX_LEN);
+    if (safe.length < KEYWORD.MIN_LEN) throw ApiError.badRequest('Tu khoa tim kiem qua ngan');
 
     return getOrSet(`search_${safe}_page_${page}`, async () => {
         const { data } = await ophimClient.get('/tim-kiem', {
@@ -84,8 +85,8 @@ const SUGGEST_FIELDS = ['name', 'slug', 'poster_url', 'thumb_url', 'year', 'qual
 
 const suggestMovies = async (keyword) => {
     if (!keyword || typeof keyword !== 'string') return { items: [] };
-    const safe = keyword.trim().substring(0, 50);
-    if (safe.length < 1) return { items: [] };
+    const safe = keyword.trim().substring(0, KEYWORD.SUGGEST_MAX_LEN);
+    if (safe.length < KEYWORD.MIN_LEN) return { items: [] };
 
     return getOrSet(`suggest_${safe}`, async () => {
         const { data } = await ophimClient.get('/tim-kiem', {

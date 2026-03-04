@@ -5,6 +5,7 @@ const ApiError = require('../utils/ApiError');
 const logger = require('../utils/logger');
 const TokenUtils = require('../utils/tokenUtils');
 const tokenBlacklistService = require('./tokenBlacklistService');
+const { TOKEN_TYPES } = require('../utils/constants');
 
 class AuthService {
     constructor(database = supabase, blacklist = tokenBlacklistService) {
@@ -12,7 +13,7 @@ class AuthService {
         this.blacklist = blacklist;
     }
 
-    login = async (identifier, password, metadata = {}) => {
+    async login(identifier, password, metadata = {}) {
         const { data: users, error } = await this.db
             .from('users')
             .select('*')
@@ -55,7 +56,7 @@ class AuthService {
         };
     }
 
-    refreshAccessToken = async (refreshToken, metadata = {}) => {
+    async refreshAccessToken(refreshToken, metadata = {}) {
         if (!refreshToken) throw ApiError.unauthorized('Refresh token la bat buoc');
 
         const tokenHash = TokenUtils.hashToken(refreshToken);
@@ -98,9 +99,9 @@ class AuthService {
         };
     }
 
-    logout = async (userId, accessToken, refreshToken) => {
+    async logout(userId, accessToken, refreshToken) {
         try {
-            this._blacklistAccessToken(accessToken);
+            this.blacklistAccessToken(accessToken);
 
             if (refreshToken) {
                 const tokenHash = TokenUtils.hashToken(refreshToken);
@@ -117,7 +118,7 @@ class AuthService {
         }
     }
 
-    verifyAccessToken = async (token) => {
+    async verifyAccessToken(token) {
         const decoded = TokenUtils.verifyAccessToken(token);
 
         const tokenHash = TokenUtils.hashToken(token);
@@ -137,7 +138,7 @@ class AuthService {
         return this._sanitize(user);
     }
 
-    revokeAllRefreshTokens = async (userId) => {
+    async revokeAllRefreshTokens(userId) {
         await this.db
             .from('refresh_tokens')
             .update({ revoked_at: new Date().toISOString() })
@@ -145,8 +146,8 @@ class AuthService {
             .is('revoked_at', null);
     }
 
-    // Blacklist access token hien tai
-    _blacklistAccessToken = (accessToken) => {
+    // Public: cho phep controller goi khi logout-all
+    blacklistAccessToken(accessToken) {
         if (!accessToken) return;
         const tokenHash = TokenUtils.hashToken(accessToken);
         const remaining = TokenUtils.getTokenRemainingTime(accessToken);
@@ -155,7 +156,7 @@ class AuthService {
         }
     }
 
-    _createAccessToken = (user) => {
+    _createAccessToken(user) {
         return TokenUtils.generateAccessToken({
             userId: user.id,
             username: user.username,
@@ -164,7 +165,7 @@ class AuthService {
         });
     }
 
-    _saveRefreshToken = async (userId, refreshToken, metadata = {}) => {
+    async _saveRefreshToken(userId, refreshToken, metadata = {}) {
         const tokenHash = TokenUtils.hashToken(refreshToken);
         const expiresAt = new Date(Date.now() + config.jwt.refreshToken.maxAge);
 
@@ -177,14 +178,14 @@ class AuthService {
         });
     }
 
-    _revokeRefreshToken = async (tokenId) => {
+    async _revokeRefreshToken(tokenId) {
         await this.db
             .from('refresh_tokens')
             .update({ revoked_at: new Date().toISOString() })
             .eq('id', tokenId);
     }
 
-    _updateLastLogin = async (userId) => {
+    async _updateLastLogin(userId) {
         try {
             await this.db
                 .from('users')
@@ -195,7 +196,7 @@ class AuthService {
         }
     }
 
-    _sanitize = (user) => {
+    _sanitize(user) {
         const { password_hash, ...clean } = user;
         return clean;
     }

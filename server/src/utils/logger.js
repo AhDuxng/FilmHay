@@ -12,7 +12,6 @@ const logFormat = winston.format.combine(
     })
 );
 
-// Trong moi truong serverless (Netlify Functions), filesystem la read-only
 // Chi dung file transports khi chay tren server truyen thong
 const isServerless = !!process.env.NETLIFY || !!process.env.AWS_LAMBDA_FUNCTION_NAME;
 

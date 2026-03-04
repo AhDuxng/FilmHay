@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { authApi } from '../services/api';
+import { useAuth } from '../contexts/AuthContext';
 import '../styles/LoginPage.css';
 
 const LoginPage = () => {
     const navigate = useNavigate();
+    const { login } = useAuth();
     const [formData, setFormData] = useState({
         identifier: '',
         password: '',
@@ -36,18 +37,13 @@ const LoginPage = () => {
         setLoading(true);
 
         try {
-            const response = await authApi.login(formData.identifier, formData.password);
+            const result = await login(formData.identifier, formData.password);
             
-            if (response.success) {
-                // Luu token va user info vao localStorage
-                localStorage.setItem('auth_token', response.data.token);
-                localStorage.setItem('user', JSON.stringify(response.data.user));
-                
-                // Dispatch event de AuthContext cap nhat
-                window.dispatchEvent(new Event('auth-change'));
-                
+            if (result.success) {
                 // Redirect ve trang chu
                 navigate('/', { replace: true });
+            } else {
+                setError(result.error || 'Đăng nhập thất bại. Vui lòng thử lại');
             }
         } catch (err) {
             setError(err.message || 'Đăng nhập thất bại. Vui lòng thử lại');

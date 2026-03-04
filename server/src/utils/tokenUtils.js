@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const config = require('../config');
 const ApiError = require('./ApiError');
+const { TOKEN_TYPES, JWT_CONFIG, BEARER_PREFIX } = require('./constants');
 
 const JWT_ERRORS = {
     TokenExpiredError: 'Access token da het han',
@@ -9,9 +10,8 @@ const JWT_ERRORS = {
 };
 
 class TokenUtils {
-    // Uu tien: Cookie > Authorization Header
-    static extractToken(req, tokenType = 'access') {
-        const cookieName = tokenType === 'access'
+    static extractToken(req, tokenType = TOKEN_TYPES.ACCESS) {
+        const cookieName = tokenType === TOKEN_TYPES.ACCESS
             ? config.jwt.accessToken.cookieName
             : config.jwt.refreshToken.cookieName;
 
@@ -19,14 +19,14 @@ class TokenUtils {
         if (token) return token;
 
         const auth = req.headers.authorization;
-        return auth?.startsWith('Bearer ') ? auth.slice(7) : null;
+        return auth?.startsWith(BEARER_PREFIX) ? auth.slice(BEARER_PREFIX.length) : null;
     }
 
     static generateAccessToken(payload) {
         return jwt.sign(payload, config.jwt.accessToken.secret, {
             expiresIn: config.jwt.accessToken.expiresIn,
-            issuer: 'phimhay-api',
-            audience: 'phimhay-client',
+            issuer: JWT_CONFIG.ISSUER,
+            audience: JWT_CONFIG.AUDIENCE,
         });
     }
 
@@ -56,8 +56,8 @@ class TokenUtils {
         }
     }
 
-    static getCookieOptions(tokenType = 'access') {
-        const tokenConfig = tokenType === 'refresh'
+    static getCookieOptions(tokenType = TOKEN_TYPES.ACCESS) {
+        const tokenConfig = tokenType === TOKEN_TYPES.REFRESH
             ? config.jwt.refreshToken
             : config.jwt.accessToken;
 
