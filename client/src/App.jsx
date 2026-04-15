@@ -7,7 +7,6 @@ import ErrorBoundary from './components/common/ErrorBoundary';
 import PageTransition from './components/common/PageTransition';
 import PrivateRoute from './components/common/PrivateRoute';
 import { AuthProvider } from './contexts/AuthContext';
-import LoginPage from './pages/LoginPage';
 
 // Lazy load pages - chi tai khi can
 const HomePage = lazy(() => import('./pages/HomePage'));
@@ -21,8 +20,8 @@ function App() {
             <BrowserRouter>
                 <AuthProvider>
                     <Routes>
-                        {/* Public route - Login */}
-                        <Route path="/login" element={<LoginPage />} />
+                        {/* Login is temporarily disabled */}
+                        <Route path="/login" element={<Navigate to="/" replace />} />
 
                         {/* Protected routes - Can dang nhap */}
                         <Route
