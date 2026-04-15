@@ -1,6 +1,7 @@
 import axios from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL || '/api';
+const AUTH_DISABLED = true;
 
 // Tao axios instance voi config chuan
 const api = axios.create({
@@ -30,8 +31,8 @@ api.interceptors.response.use(
     (error) => {
         const message = error.response?.data?.message || 'Lỗi kết nối, vui lòng thử lại';
         
-        // Neu token het han hoac khong hop le, xoa token va redirect ve login
-        if (error.response?.status === 401) {
+        // Neu dang bat auth va token het han/khong hop le, moi xu ly redirect login
+        if (!AUTH_DISABLED && error.response?.status === 401) {
             localStorage.removeItem('auth_token');
             localStorage.removeItem('user');
             

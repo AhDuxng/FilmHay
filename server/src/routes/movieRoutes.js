@@ -1,10 +1,8 @@
 const { Router } = require('express');
 const mc = require('../controllers/movieController');
 const { searchLimiter, suggestLimiter } = require('../middlewares/rateLimiter');
-const { authenticate } = require('../middlewares/auth.middleware');
 
 const router = Router();
-router.use(authenticate);
 
 router.get('/home', mc.getHome);
 router.get('/new', mc.getNewMovies);
