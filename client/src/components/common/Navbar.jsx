@@ -16,14 +16,12 @@ function Navbar() {
     const userMenuRef = useRef(null);
     const { user, logout } = useAuth();
 
-    // them nen dam khi cuon xuong
     useEffect(() => {
         const handleScroll = () => setScrolled(window.scrollY > 50);
         window.addEventListener('scroll', handleScroll, { passive: true });
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
-    // Xu ly tim kiem + chuyen keyboard events cho dropdown goi y
     const handleSearch = useCallback((e) => {
         
         if (suggestKeyDownRef.current) {
