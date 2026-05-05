@@ -1,14 +1,8 @@
-import { memo } from 'react';
+﻿import { memo } from 'react';
+import { FaPlay } from 'react-icons/fa6';
 
-/**
- * @param {string} className 
- */
-const PlayIcon = memo(function PlayIcon({ className = 'w-5 h-5 fill-current' }) {
-    return (
-        <svg className={className} viewBox="0 0 24 24">
-            <path d="M8 5v14l11-7z" />
-        </svg>
-    );
+const PlayIcon = memo(function PlayIcon({ className = 'h-4 w-4' }) {
+  return <FaPlay className={className} />;
 });
 
 export default PlayIcon;

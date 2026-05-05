@@ -1,95 +1,80 @@
-import axios from 'axios';
+﻿import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || '/api';
-const AUTH_DISABLED = true;
+const API_BASE_URL = import.meta.env.VITE_OPHIM_API_URL || 'https://ophim1.com/v1/api';
 
-// Tao axios instance voi config chuan
 const api = axios.create({
-    baseURL: API_URL,
-    timeout: 15_000,
-    headers: {
-        'Content-Type': 'application/json',
-    },
-    withCredentials: true, // Cho phep gui cookie
+  baseURL: API_BASE_URL,
+  timeout: 20000,
+  headers: {
+    accept: 'application/json',
+  },
 });
 
-// Request interceptor - them token vao header
-api.interceptors.request.use(
-    (config) => {
-        const token = localStorage.getItem('auth_token');
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
-        }
-        return config;
-    },
-    (error) => Promise.reject(error)
+api.interceptors.response.use(
+  (response) => response.data,
+  (error) => {
+    const status = error?.response?.status;
+    const message = error?.response?.data?.message || error?.message || 'Request failed';
+
+    if (status >= 500) {
+      return Promise.reject(new Error('Server is busy. Please retry.'));
+    }
+
+    return Promise.reject(new Error(message));
+  }
 );
 
-// Response interceptor - xu ly loi tap trung
-api.interceptors.response.use(
-    (response) => response.data,
-    (error) => {
-        const message = error.response?.data?.message || 'Lỗi kết nối, vui lòng thử lại';
-        
-        // Neu dang bat auth va token het han/khong hop le, moi xu ly redirect login
-        if (!AUTH_DISABLED && error.response?.status === 401) {
-            localStorage.removeItem('auth_token');
-            localStorage.removeItem('user');
-            
-            // Neu khong phai dang o trang login, redirect ve login
-            if (!window.location.pathname.includes('/login')) {
-                window.location.href = '/login';
-            }
-        }
-        
-        console.error('[API Error]', message);
-        return Promise.reject(new Error(message));
-    }
-);
+const withPage = (page = 1) => ({
+  params: {
+    page,
+  },
+});
 
 export const movieApi = {
-    // Trang chu
-    getHome: () => api.get('/movies/home'),
+  getHome: () => api.get('/home'),
 
-    // Danh sach phim
-    getNewMovies: (page = 1) => api.get(`/movies/new?page=${page}`),
-    getSeriesMovies: (page = 1) => api.get(`/movies/series?page=${page}`),
-    getSingleMovies: (page = 1) => api.get(`/movies/single?page=${page}`),
-    getAnimeMovies: (page = 1) => api.get(`/movies/anime?page=${page}`),
-    getTVShows: (page = 1) => api.get(`/movies/tv-shows?page=${page}`),
+  getMovieList: (slug, page = 1) => api.get(`/danh-sach/${slug}`, withPage(page)),
 
-    // Chi tiet phim
-    getMovieDetail: (slug) => api.get(`/movies/detail/${slug}`),
+  searchMovies: (keyword, page = 1) =>
+    api.get('/tim-kiem', {
+      params: {
+        keyword,
+        page,
+      },
+    }),
 
-    // Tim kiem
-    searchMovies: (keyword, page = 1) => api.get(`/movies/search?keyword=${encodeURIComponent(keyword)}&page=${page}`),
+  suggestMovies: async (keyword, limit = 8) => {
+    const payload = await api.get('/tim-kiem', {
+      params: {
+        keyword,
+        page: 1,
+      },
+    });
 
-    // Goi y tim kiem nhanh (dropdown autocomplete)
-    suggestMovies: (keyword) => api.get(`/movies/suggest?keyword=${encodeURIComponent(keyword)}`),
+    const items = payload?.data?.items || [];
 
-    // The loai / Quoc gia
-    getGenreList: () => api.get('/movies/genres'),
-    getCountryList: () => api.get('/movies/countries'),
-    getMoviesByGenre: (slug, page = 1) => api.get(`/movies/genre/${slug}?page=${page}`),
-    getMoviesByCountry: (slug, page = 1) => api.get(`/movies/country/${slug}?page=${page}`),
-};
+    return {
+      ...payload,
+      data: {
+        ...payload?.data,
+        items: items.slice(0, limit),
+      },
+    };
+  },
 
-// ===== AUTH API =====
-export const authApi = {
-    // Dang nhap
-    login: (identifier, password) => api.post('/auth/login', { identifier, password }),
-    
-    // Dang xuat
-    logout: () => api.post('/auth/logout'),
-    
-    // Lay thong tin user hien tai
-    getCurrentUser: () => api.get('/auth/me'),
-    
-    // Verify token
-    verifyToken: (token) => api.post('/auth/verify', { token }),
-    
-    // Refresh token
-    refreshToken: () => api.post('/auth/refresh'),
+  getGenreList: () => api.get('/the-loai'),
+  getMoviesByGenre: (slug, page = 1) => api.get(`/the-loai/${slug}`, withPage(page)),
+
+  getCountryList: () => api.get('/quoc-gia'),
+  getMoviesByCountry: (slug, page = 1) => api.get(`/quoc-gia/${slug}`, withPage(page)),
+
+  getYearList: () => api.get('/nam-phat-hanh'),
+  getMoviesByYear: (year, page = 1) => api.get(`/nam-phat-hanh/${year}`, withPage(page)),
+
+  getMovieDetail: (slug) => api.get(`/phim/${slug}`),
+  getMovieImages: (slug) => api.get(`/phim/${slug}/images`),
+  getMoviePeoples: (slug) => api.get(`/phim/${slug}/peoples`),
+  getMovieKeywords: (slug) => api.get(`/phim/${slug}/keywords`),
 };
 
 export default api;

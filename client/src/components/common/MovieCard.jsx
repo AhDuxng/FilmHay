@@ -1,93 +1,77 @@
-import { memo, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { getPosterUrl, getThumbUrl } from '../../utils/constants';
-import { handleImageError, scrollToTop } from '../../utils/helpers';
-import PlayIcon from './PlayIcon';
+import { memo, useMemo } from 'react';
+import { Link } from 'react-router-dom';
+import { RiPlayFill, RiStarFill } from 'react-icons/ri';
+import { buildMetaText, getPosterUrl, getThumbUrl, handleImageError, getYearFromMovie } from '../../utils/helpers';
 
-const MovieCard = memo(function MovieCard({ movie, landscape = false }) {
-    const navigate = useNavigate();
+const MovieCard = memo(function MovieCard({ movie, landscape = true, inSlider = true, cdnBase = '' }) {
+  const imageUrl = landscape ? getThumbUrl(movie, cdnBase) : getPosterUrl(movie, cdnBase);
+  const title = movie?.name || movie?.origin_name || 'Untitled';
+  const genre = movie?.category?.[0]?.name || '';
+  const metaText = buildMetaText(movie);
+  const year = getYearFromMovie(movie);
 
-    // Lay thong tin tu movie object
-    const name = movie?.name || movie?.title || 'Không có tên';
-    const slug = movie?.slug || '';
-    const posterUrl = movie?.poster_url || movie?.thumb_url || '';
-    const thumbUrl = movie?.thumb_url || movie?.poster_url || '';
-    const episodeCurrent = movie?.episode_current || '';
-    const quality = movie?.quality || '';
-    const categories = movie?.category || [];
+  const badge = useMemo(() => {
+    const quality = String(movie?.quality || '').toLowerCase();
+    if (quality.includes('4k')) {
+      return '4K';
+    }
+    if (String(movie?.episode_current || '').toLowerCase().includes('full')) {
+      return 'FULL';
+    }
+    return movie?.quality || 'HD';
+  }, [movie]);
 
-    // Tao URL hinh anh
-    const imgSrc = landscape ? getThumbUrl(thumbUrl) : getPosterUrl(posterUrl);
+  return (
+    <Link
+      to={`/phim/${movie.slug}`}
+      className={`group relative overflow-hidden rounded-2xl border border-white/10 bg-surface-2 transition duration-300 hover:-translate-y-1 hover:border-white/30 hover:shadow-[0_20px_40px_rgba(0,0,0,0.35)] ${
+        inSlider ? 'shrink-0 w-[300px] sm:w-[320px] md:w-[360px]' : 'w-full'
+      }`}
+    >
+      <div className="relative overflow-hidden aspect-video">
+        <img
+          src={imageUrl}
+          alt={title}
+          loading="lazy"
+          onError={handleImageError}
+          className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+        />
 
-    // Xac dinh badge style
-    const getBadge = () => {
-        if (quality?.toLowerCase().includes('4k')) return { cls: 'bg-gradient-to-br from-primary to-primary-dark', text: '4K' };
-        if (episodeCurrent?.toLowerCase().includes('full') || episodeCurrent?.toLowerCase().includes('hoàn thành')) {
-            return { cls: 'bg-emerald-600', text: 'Full' };
-        }
-        if (movie?.type === 'single') return { cls: 'bg-primary', text: 'HD' };
-        return { cls: 'bg-sky-400', text: quality || 'HD' };
-    };
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/10 to-transparent opacity-80" />
 
-    const badge = getBadge();
+        <span className="absolute left-3 top-3 rounded-full bg-primary px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white">
+          {badge}
+        </span>
 
-    // Genre text
-    const genreText = categories?.length > 0
-        ? categories.map(c => c.name).slice(0, 2).join(', ')
-        : '';
+        {year ? (
+          <span className="absolute right-3 top-3 rounded-full border border-white/25 bg-black/50 px-2.5 py-1 text-[10px] font-semibold text-white">
+            {year}
+          </span>
+        ) : null}
 
-    // Sub text
-    const subText = [episodeCurrent, genreText].filter(Boolean).join(' • ');
-
-    const handleClick = useCallback(() => {
-        if (slug) {
-            scrollToTop();
-            navigate(`/phim/${slug}`);
-        }
-    }, [slug, navigate]);
-
-    return (
-        <div
-            className={`group relative cursor-pointer rounded-lg overflow-hidden transition-all duration-300
-                hover:-translate-y-2 hover:scale-[1.03] hover:shadow-[0_12px_30px_rgba(0,0,0,0.6)] hover:z-[3]
-                ${landscape
-                    ? 'flex-[0_0_320px] max-md:flex-[0_0_260px]'
-                    : 'flex-[0_0_195px] max-md:flex-[0_0_140px]'
-                }`}
-            onClick={handleClick}
-        >
-            {/* Poster */}
-            <img
-                className={`w-full object-cover rounded-lg bg-dark-light ${landscape ? 'aspect-video' : 'aspect-[2/3]'}`}
-                src={imgSrc}
-                alt={name}
-                loading="lazy"
-                onError={handleImageError}
-            />
-
-            {/* Badge (VIP, Free, HD, HOT) */}
-            <span className={`absolute top-2 left-2 px-2 py-0.5 text-[10px] font-bold rounded-[3px] uppercase z-[2] text-white ${badge.cls}`}>
-                {badge.text}
-            </span>
-
-            {/* Tap hien tai (an khi hover) */}
-            {episodeCurrent && !landscape && (
-                <div className="absolute bottom-0 inset-x-0 bg-black/70 text-center py-1 text-[11px] text-neutral-300 rounded-b-lg group-hover:hidden">
-                    {episodeCurrent}
-                </div>
-            )}
-
-            {/* Overlay khi hover */}
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/85 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3.5">
-                {/* Nut play o giua */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-primary/90 flex items-center justify-center opacity-0 scale-75 group-hover:opacity-100 group-hover:scale-100 transition-all duration-300">
-                    <PlayIcon className="w-[22px] h-[22px] fill-white" />
-                </div>
-                <div className="text-[13px] font-semibold truncate mb-1">{name}</div>
-                <div className="text-[11px] text-neutral-500">{subText}</div>
-            </div>
+        <div className="absolute inset-0 flex items-center justify-center opacity-0 transition duration-300 group-hover:opacity-100">
+          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-white shadow-[0_10px_30px_rgba(255,143,163,0.45)]">
+            <RiPlayFill className="text-xl" />
+          </span>
         </div>
-    );
+      </div>
+
+      <div className="space-y-1.5 p-3.5">
+        <p className="line-clamp-1 text-sm font-semibold text-white md:text-[15px]">{title}</p>
+        <p className="line-clamp-1 text-xs text-neutral-400">{movie?.origin_name || title}</p>
+        <div className="flex items-center gap-2 text-xs text-neutral-400">
+          {genre ? <span className="line-clamp-1">{genre}</span> : null}
+          {metaText ? <span className="line-clamp-1">• {metaText}</span> : null}
+        </div>
+        {movie?.episode_current ? (
+          <div className="inline-flex items-center gap-1 rounded-full bg-white/10 px-2.5 py-1 text-[11px] font-medium text-white">
+            <RiStarFill className="text-[12px] text-accent" />
+            {movie.episode_current}
+          </div>
+        ) : null}
+      </div>
+    </Link>
+  );
 });
 
 export default MovieCard;

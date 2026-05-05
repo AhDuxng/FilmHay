@@ -1,42 +1,50 @@
 import { memo } from 'react';
-import { LIVE_CHANNELS } from '../../utils/constants';
-import { SECTION_PADDING } from '../../utils/helpers';
+import { RiBroadcastLine, RiFlashlightLine, RiLiveLine } from 'react-icons/ri';
+import { CONTENT_WRAP, SECTION_PADDING } from '../../utils/helpers';
 import SectionHeader from '../common/SectionHeader';
 import HorizontalSlider from '../common/HorizontalSlider';
 
-const LiveTVSection = memo(function LiveTVSection() {
-    return (
-        <section className={`${SECTION_PADDING} mb-10 relative`}>
-            <SectionHeader title="Truyền hình trực tiếp" moreLink="#" />
+const channels = [
+  { name: 'Thể thao 24h', desc: 'Diễn biến mới nhất', tone: 'from-[#4f1d95] to-[#7c3aed]' },
+  { name: 'Giải trí tổng hợp', desc: 'Talkshow và reality', tone: 'from-[#0f766e] to-[#14b8a6]' },
+  { name: 'Anime Plus', desc: 'Marathon anime', tone: 'from-[#be185d] to-[#f43f5e]' },
+  { name: 'Cinema Action', desc: 'Bom tấn hành động', tone: 'from-[#9a3412] to-[#ea580c]' },
+];
 
-            {/* Danh sach kenh */}
-            <HorizontalSlider>
-                {LIVE_CHANNELS.map((channel) => (
-                    <div key={channel.name} className="flex-[0_0_180px] rounded-lg overflow-hidden bg-dark-light transition-transform duration-300 cursor-pointer hover:-translate-y-1">
-                        {/* Thumbnail */}
-                        <div className="relative">
-                            <div
-                                className="w-full aspect-video flex items-center justify-center"
-                                style={{ background: `linear-gradient(135deg, ${channel.color})` }}
-                            >
-                                <span className="text-[28px]">{channel.emoji}</span>
-                            </div>
-                            {/* LIVE badge */}
-                            <div className="absolute top-2 left-2 px-2 py-0.5 bg-primary text-white text-[10px] font-bold rounded-[3px] flex items-center gap-1">
-                                <span className="w-1.5 h-1.5 bg-white rounded-full animate-live-pulse" />
-                                LIVE
-                            </div>
-                        </div>
-                        {/* Info */}
-                        <div className="px-3 py-2.5">
-                            <div className="text-[13px] font-semibold mb-1 truncate">{channel.name}</div>
-                            <div className="text-[11px] text-neutral-500">{channel.desc}</div>
-                        </div>
-                    </div>
-                ))}
-            </HorizontalSlider>
-        </section>
-    );
+const LiveTVSection = memo(function LiveTVSection() {
+  return (
+    <section className={`${SECTION_PADDING} ${CONTENT_WRAP} mt-10`}>
+      <SectionHeader title="Kênh phát trực tiếp" />
+      <HorizontalSlider scrollAmount={420}>
+        {channels.map((channel) => (
+          <div
+            key={channel.name}
+            className="min-w-[250px] overflow-hidden rounded-2xl border border-white/10 bg-surface-2"
+          >
+            <div className={`h-36 bg-gradient-to-br ${channel.tone} p-4`}>
+              <div className="flex items-center justify-between">
+                <span className="inline-flex items-center gap-1 rounded-full bg-black/25 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-white">
+                  <RiLiveLine className="text-sm" />
+                  Live
+                </span>
+                <RiBroadcastLine className="text-2xl text-white/80" />
+              </div>
+
+              <div className="mt-10">
+                <p className="text-lg font-bold text-white">{channel.name}</p>
+                <p className="text-sm text-white/85">{channel.desc}</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 px-4 py-3 text-sm text-neutral-300">
+              <RiFlashlightLine className="text-primary" />
+              Đang phát sóng
+            </div>
+          </div>
+        ))}
+      </HorizontalSlider>
+    </section>
+  );
 });
 
 export default LiveTVSection;

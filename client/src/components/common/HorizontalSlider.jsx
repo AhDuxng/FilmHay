@@ -1,44 +1,48 @@
-import { memo, useRef, useCallback } from 'react';
+﻿import { memo, useCallback, useRef } from 'react';
+import { RiArrowLeftSLine, RiArrowRightSLine } from 'react-icons/ri';
 
-/**
- * @param {number} scrollAmount - so pixel cuon moi lan click (mac dinh 600)
- * @param {ReactNode} children - noi dung ben trong slider
- */
-const HorizontalSlider = memo(function HorizontalSlider({ children, scrollAmount = 600 }) {
-    const rowRef = useRef(null);
+const HorizontalSlider = memo(function HorizontalSlider({ children, scrollAmount = 620 }) {
+  const rowRef = useRef(null);
 
-    // Scroll slider trai/phai
-    const scroll = useCallback((direction) => {
-        if (!rowRef.current) return;
-        const amount = direction === 'left' ? -scrollAmount : scrollAmount;
-        rowRef.current.scrollBy({ left: amount, behavior: 'smooth' });
-    }, [scrollAmount]);
+  const scroll = useCallback(
+    (direction) => {
+      if (!rowRef.current) {
+        return;
+      }
 
-    return (
-        <div className="group/slider relative">
-            <div className="flex gap-3 overflow-x-auto scroll-smooth pb-2.5 scrollbar-hide" ref={rowRef}>
-                {children}
-            </div>
+      rowRef.current.scrollBy({
+        left: direction === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth',
+      });
+    },
+    [scrollAmount]
+  );
 
-            {/* Mui ten trai */}
-            <div
-                className="absolute top-0 bottom-2.5 left-[-10px] w-12 z-[5] flex items-center justify-center text-white text-2xl cursor-pointer opacity-0 group-hover/slider:opacity-100 transition-opacity duration-300"
-                style={{ background: 'linear-gradient(to right, rgba(13,13,13,0.9), transparent)' }}
-                onClick={() => scroll('left')}
-            >
-                ❮
-            </div>
+  return (
+    <div className="group relative">
+      <div ref={rowRef} className="scrollbar-hide flex gap-3 overflow-x-auto pb-3 md:gap-4">
+        {children}
+      </div>
 
-            {/* Mui ten phai */}
-            <div
-                className="absolute top-0 bottom-2.5 right-[-10px] w-12 z-[5] flex items-center justify-center text-white text-2xl cursor-pointer opacity-0 group-hover/slider:opacity-100 transition-opacity duration-300"
-                style={{ background: 'linear-gradient(to left, rgba(13,13,13,0.9), transparent)' }}
-                onClick={() => scroll('right')}
-            >
-                ❯
-            </div>
-        </div>
-    );
+      <button
+        type="button"
+        onClick={() => scroll('left')}
+        className="absolute left-0 top-1/2 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/70 text-white opacity-0 backdrop-blur transition group-hover:opacity-100 md:flex"
+        aria-label="Scroll left"
+      >
+        <RiArrowLeftSLine className="text-2xl" />
+      </button>
+
+      <button
+        type="button"
+        onClick={() => scroll('right')}
+        className="absolute right-0 top-1/2 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-black/70 text-white opacity-0 backdrop-blur transition group-hover:opacity-100 md:flex"
+        aria-label="Scroll right"
+      >
+        <RiArrowRightSLine className="text-2xl" />
+      </button>
+    </div>
+  );
 });
 
 export default HorizontalSlider;

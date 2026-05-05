@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import { useHomeData } from '../hooks/useMovies';
 import { usePageTitle } from '../hooks/usePageTitle';
+import { useHomeData } from '../hooks/useMovies';
 import HeroCarousel from '../components/home/HeroCarousel';
 import TrendingSection from '../components/home/TrendingSection';
 import Top10Section from '../components/home/Top10Section';
@@ -9,55 +9,69 @@ import LiveTVSection from '../components/home/LiveTVSection';
 import Loading from '../components/common/Loading';
 import ErrorState from '../components/common/ErrorState';
 
-function HomePage() {
-    const { data, loading, error, refetch } = useHomeData();
-    usePageTitle('Trang chủ - Xem phim online miễn phí');
-
-    const homeData = useMemo(() => {
-        if (!data) return null;
-        const innerData = data?.data || data;
-        const items = innerData?.items || [];
-
-        return {
-            heroMovies: items.slice(0, 5),
-            trendingMovies: items.slice(0, 12),
-            top10Movies: items.slice(12, 22),
-            seriesMovies: items.slice(22, 34),
-            singleMovies: items.slice(34, 46),
-            actionMovies: items.slice(46, 58),
-            romanceMovies: items.slice(58, 70),
-            animeMovies: items.slice(70, 82),
-        };
-    }, [data]);
-
-    if (loading) return <Loading fullScreen />;
-
-    if (error) {
-        return (
-            <ErrorState
-                title="Không thể tải dữ liệu"
-                message={error}
-                onRetry={refetch}
-                hasTopPadding
-            />
-        );
+function uniqueBySlug(items = []) {
+  const map = new Map();
+  for (const item of items) {
+    if (item?.slug && !map.has(item.slug)) {
+      map.set(item.slug, item);
     }
+  }
+  return Array.from(map.values());
+}
 
-    if (!homeData) return null;
+function HomePage() {
+  const { data, loading, error, refetch } = useHomeData();
+  usePageTitle('Trang chủ');
 
+  const content = useMemo(() => {
+    const homeItems = data?.home?.items || [];
+    const seriesItems = data?.series?.items || [];
+    const singleItems = data?.single?.items || [];
+    const animeItems = data?.anime?.items || [];
+    const tvItems = data?.tvShows?.items || [];
+
+    const trending = uniqueBySlug([...homeItems, ...seriesItems, ...singleItems]).slice(0, 18);
+    const top10 = uniqueBySlug([...seriesItems, ...singleItems, ...animeItems]).slice(0, 10);
+
+    return {
+      hero: uniqueBySlug(homeItems).slice(0, 6),
+      trending,
+      top10,
+      series: seriesItems,
+      single: singleItems,
+      anime: animeItems,
+      tvShows: tvItems,
+      cdn: data?.home?.cdn || data?.series?.cdn || '',
+    };
+  }, [data]);
+
+  if (loading) {
+    return <Loading fullScreen />;
+  }
+
+  if (error) {
     return (
-        <main>
-            <HeroCarousel movies={homeData.heroMovies} />
-            <TrendingSection movies={homeData.trendingMovies} />
-            <Top10Section movies={homeData.top10Movies} />
-            <MovieSection title="Phim bộ hay nhất" movies={homeData.seriesMovies} moreLink="/danh-sach/phim-bo" />
-            <MovieSection title="Phim lẻ đề cử" movies={homeData.singleMovies} moreLink="/danh-sach/phim-le" />
-            <MovieSection title="Phim hành động" movies={homeData.actionMovies} moreLink="/the-loai/hanh-dong" />
-            <MovieSection title="Phim tình cảm, lãng mạn" movies={homeData.romanceMovies} moreLink="/the-loai/tinh-cam" />
-            <LiveTVSection />
-            <MovieSection title="Hoạt hình & Thiếu nhi" movies={homeData.animeMovies} moreLink="/danh-sach/hoat-hinh" />
-        </main>
+      <ErrorState
+        title="Không thể tải trang chủ"
+        message={error}
+        onRetry={refetch}
+        hasTopPadding
+      />
     );
+  }
+
+  return (
+    <main className="pb-8">
+      <HeroCarousel movies={content.hero} cdnBase={content.cdn} />
+      <TrendingSection movies={content.trending} cdnBase={content.cdn} />
+      <Top10Section movies={content.top10} cdnBase={content.cdn} />
+      <MovieSection title="Phim bộ mới cập nhật" movies={content.series} moreLink="/danh-sach/phim-bo" landscape cdnBase={content.cdn} />
+      <MovieSection title="Phim lẻ đề cử" movies={content.single} moreLink="/danh-sach/phim-le" landscape cdnBase={content.cdn} />
+      <MovieSection title="Anime nổi bật" movies={content.anime} moreLink="/danh-sach/hoat-hinh" landscape cdnBase={content.cdn} />
+      <LiveTVSection />
+      <MovieSection title="TV Shows mới" movies={content.tvShows} moreLink="/danh-sach/tv-shows" landscape cdnBase={content.cdn} />
+    </main>
+  );
 }
 
 export default HomePage;

@@ -1,118 +1,200 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+﻿import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { movieApi } from '../services/api';
+import {
+  createPagination,
+  normalizeListPayload,
+  normalizeMoviePayload,
+  sanitizeImages,
+  sanitizeKeywords,
+  sanitizePeoples,
+} from '../utils/helpers';
 
-/**
- * @param {Function} apiMethod - ham goi API
- * @param {Array} params - tham so truyen vao apiMethod
- * @param {Array} dependencies - dependency array cho useEffect
- * @param {boolean} enabled - chi goi API khi true (mac dinh true)
- */
-export function useMovies(apiMethod, params = [], dependencies = [], enabled = true) {
-    const [data, setData] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const abortRef = useRef(null);
+const EMPTY_LIST_DATA = {
+  items: [],
+  pagination: createPagination(),
+  titlePage: '',
+  typeList: '',
+  seo: null,
+  cdn: '',
+};
 
-    const fetchData = useCallback(async () => {
-        // Huy request truoc do neu con pending
-        if (abortRef.current) {
-            abortRef.current.abort();
-        }
-        const controller = new AbortController();
-        abortRef.current = controller;
+const EMPTY_HOME_DATA = {
+  home: EMPTY_LIST_DATA,
+  series: EMPTY_LIST_DATA,
+  single: EMPTY_LIST_DATA,
+  anime: EMPTY_LIST_DATA,
+  tvShows: EMPTY_LIST_DATA,
+};
 
-        try {
-            setLoading(true);
-            setError(null);
-            const response = await apiMethod(...params);
-            if (!controller.signal.aborted) {
-                setData(response.data);
-            }
-        } catch (err) {
-            if (!controller.signal.aborted) {
-                setError(err.message || 'Co loi xay ra');
-            }
-        } finally {
-            if (!controller.signal.aborted) {
-                setLoading(false);
-            }
-        }
-    }, dependencies); // eslint-disable-line react-hooks/exhaustive-deps
+const EMPTY_DETAIL_DATA = {
+  movie: null,
+  cdn: '',
+  seo: null,
+  images: [],
+  peoples: [],
+  keywords: [],
+};
 
-    useEffect(() => {
-        if (!enabled) {
-            setLoading(false);
-            return;
-        }
-        fetchData();
-        return () => {
-            if (abortRef.current) {
-                abortRef.current.abort();
-            }
-        };
-    }, [fetchData, enabled]);
+const EMPTY_META_DATA = {
+  genres: [],
+  countries: [],
+  years: [],
+};
 
-    const refetch = useCallback(() => {
-        fetchData();
-    }, [fetchData]);
+export function useQuery(queryFn, deps = [], options = {}) {
+  const { enabled = true, initialData = null } = options;
+  const [data, setData] = useState(initialData);
+  const [loading, setLoading] = useState(enabled);
+  const [error, setError] = useState('');
+  const requestRef = useRef(0);
+  const queryFnRef = useRef(queryFn);
 
-    return { data, loading, error, refetch };
+  useEffect(() => {
+    queryFnRef.current = queryFn;
+  }, [queryFn]);
+
+  const execute = useCallback(async () => {
+    if (!enabled) {
+      setLoading(false);
+      return;
+    }
+
+    const requestId = requestRef.current + 1;
+    requestRef.current = requestId;
+
+    setLoading(true);
+    setError('');
+
+    try {
+      const payload = await queryFnRef.current();
+      if (requestRef.current === requestId) {
+        setData(payload);
+      }
+    } catch (queryError) {
+      if (requestRef.current === requestId) {
+        setError(queryError.message || 'Unable to load data');
+      }
+    } finally {
+      if (requestRef.current === requestId) {
+        setLoading(false);
+      }
+    }
+  }, [enabled, ...deps]);
+
+  useEffect(() => {
+    execute();
+  }, [execute]);
+
+  const refetch = useCallback(() => {
+    execute();
+  }, [execute]);
+
+  return { data, loading, error, refetch };
 }
 
-/**
- * Hook lay du lieu trang chu
- */
 export function useHomeData() {
-    return useMovies(movieApi.getHome, [], []);
+  return useQuery(
+    async () => {
+      const [home, series, single, anime, tvShows] = await Promise.all([
+        movieApi.getHome(),
+        movieApi.getMovieList('phim-bo', 1),
+        movieApi.getMovieList('phim-le', 1),
+        movieApi.getMovieList('hoat-hinh', 1),
+        movieApi.getMovieList('tv-shows', 1),
+      ]);
+
+      return {
+        home: normalizeListPayload(home),
+        series: normalizeListPayload(series),
+        single: normalizeListPayload(single),
+        anime: normalizeListPayload(anime),
+        tvShows: normalizeListPayload(tvShows),
+      };
+    },
+    [],
+    { initialData: EMPTY_HOME_DATA }
+  );
 }
 
-/**
- * Hook lay chi tiet phim
- */
-export function useMovieDetail(slug) {
-    return useMovies(movieApi.getMovieDetail, [slug], [slug]);
+function useListResult(queryFn, deps, enabled = true) {
+  const query = useQuery(queryFn, deps, {
+    enabled,
+    initialData: EMPTY_LIST_DATA,
+  });
+
+  const normalized = useMemo(() => normalizeListPayload(query.data), [query.data]);
+
+  return {
+    ...query,
+    data: normalized,
+  };
 }
 
-/**
- * Hook tim kiem phim
- */
-export function useSearchMovies(keyword, page = 1) {
-    return useMovies(movieApi.searchMovies, [keyword, page], [keyword, page]);
+export function useMovieList(slug, page = 1, enabled = true) {
+  return useListResult(() => movieApi.getMovieList(slug, page), [slug, page], enabled);
 }
 
-/**
- * Hook lay danh sach phim theo loai
- * @param {boolean} enabled - chi goi khi route la /danh-sach/
- */
-export function useMovieList(type, page = 1, enabled = true) {
-    const apiMap = {
-        'phim-moi': movieApi.getNewMovies,
-        'phim-bo': movieApi.getSeriesMovies,
-        'phim-le': movieApi.getSingleMovies,
-        'hoat-hinh': movieApi.getAnimeMovies,
-        'tv-shows': movieApi.getTVShows,
-    };
-
-    const apiMethod = apiMap[type] || movieApi.getNewMovies;
-    return useMovies(apiMethod, [page], [type, page], enabled);
+export function useSearchMovies(keyword, page = 1, enabled = true) {
+  return useListResult(() => movieApi.searchMovies(keyword, page), [keyword, page], enabled && Boolean(keyword));
 }
 
-/**
- * Hook lay phim theo the loai (genre)
- * @param {string} slug - slug the loai (vd: 'hanh-dong')
- * @param {number} page
- * @param {boolean} enabled - chi goi khi route la /the-loai/
- */
 export function useMoviesByGenre(slug, page = 1, enabled = true) {
-    return useMovies(movieApi.getMoviesByGenre, [slug, page], [slug, page], enabled);
+  return useListResult(() => movieApi.getMoviesByGenre(slug, page), [slug, page], enabled && Boolean(slug));
 }
 
-/**
- * Hook lay phim theo quoc gia (country)
- * @param {string} slug - slug quoc gia (vd: 'han-quoc')
- * @param {number} page
- * @param {boolean} enabled - chi goi khi route la /quoc-gia/
- */
 export function useMoviesByCountry(slug, page = 1, enabled = true) {
-    return useMovies(movieApi.getMoviesByCountry, [slug, page], [slug, page], enabled);
+  return useListResult(() => movieApi.getMoviesByCountry(slug, page), [slug, page], enabled && Boolean(slug));
+}
+
+export function useMoviesByYear(year, page = 1, enabled = true) {
+  return useListResult(() => movieApi.getMoviesByYear(year, page), [year, page], enabled && Boolean(year));
+}
+
+export function useMovieDetail(slug) {
+  return useQuery(
+    async () => {
+      const detail = await movieApi.getMovieDetail(slug);
+      const [images, peoples, keywords] = await Promise.allSettled([
+        movieApi.getMovieImages(slug),
+        movieApi.getMoviePeoples(slug),
+        movieApi.getMovieKeywords(slug),
+      ]);
+
+      const detailData = normalizeMoviePayload(detail);
+
+      return {
+        ...detailData,
+        images: images.status === 'fulfilled' ? sanitizeImages(images.value) : [],
+        peoples: peoples.status === 'fulfilled' ? sanitizePeoples(peoples.value) : [],
+        keywords: keywords.status === 'fulfilled' ? sanitizeKeywords(keywords.value) : [],
+      };
+    },
+    [slug],
+    {
+      enabled: Boolean(slug),
+      initialData: EMPTY_DETAIL_DATA,
+    }
+  );
+}
+
+export function useBrowseMetadata() {
+  return useQuery(
+    async () => {
+      const [genrePayload, countryPayload, yearPayload] = await Promise.all([
+        movieApi.getGenreList(),
+        movieApi.getCountryList(),
+        movieApi.getYearList(),
+      ]);
+
+      return {
+        genres: genrePayload?.data?.items || [],
+        countries: countryPayload?.data?.items || [],
+        years: yearPayload?.data?.items || [],
+      };
+    },
+    [],
+    {
+      initialData: EMPTY_META_DATA,
+    }
+  );
 }

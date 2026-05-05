@@ -1,57 +1,66 @@
-import { memo, useState, useMemo } from 'react';
-import MovieCard from '../common/MovieCard';
+import { memo, useMemo, useState } from 'react';
 import SectionHeader from '../common/SectionHeader';
 import HorizontalSlider from '../common/HorizontalSlider';
-import { CATEGORY_TABS } from '../../utils/constants';
-import { SECTION_PADDING } from '../../utils/helpers';
+import MovieCard from '../common/MovieCard';
+import { CONTENT_WRAP, SECTION_PADDING } from '../../utils/helpers';
 
-const TrendingSection = memo(function TrendingSection({ movies = [] }) {
-    const [activeTab, setActiveTab] = useState('all');
+const FILTERS = [
+  { key: 'all', label: 'Tất cả' },
+  { key: 'series', label: 'Phim bộ' },
+  { key: 'single', label: 'Phim lẻ' },
+  { key: 'hoathinh', label: 'Hoạt hình' },
+  { key: 'han-quoc', label: 'Hàn Quốc' },
+  { key: 'trung-quoc', label: 'Trung Quốc' },
+  { key: 'au-my', label: 'Âu Mỹ' },
+];
 
-    // Loc phim theo quoc gia tu tab dang chon
-    const filteredMovies = useMemo(() => {
-        if (activeTab === 'all') return movies;
-        return movies.filter((movie) => {
-            const countries = movie.country || [];
-            return countries.some((c) => c.slug === activeTab);
-        });
-    }, [movies, activeTab]);
+const TrendingSection = memo(function TrendingSection({ movies = [], cdnBase = '' }) {
+  const [activeFilter, setActiveFilter] = useState('all');
 
-    if (!movies || movies.length === 0) return null;
+  const filtered = useMemo(() => {
+    if (activeFilter === 'all') {
+      return movies;
+    }
 
-    return (
-        <section className={`${SECTION_PADDING} mb-10 relative`}>
-            <SectionHeader title="Đang thịnh hành" moreLink="#" />
+    if (['series', 'single', 'hoathinh', 'tvshows'].includes(activeFilter)) {
+      return movies.filter((movie) => movie.type === activeFilter);
+    }
 
-            {/* Category tabs */}
-            <div className="flex gap-3 mb-5 overflow-x-auto scrollbar-hide pb-1">
-                {CATEGORY_TABS.map((tab) => (
-                    <button
-                        key={tab.value}
-                        className={`px-5 py-2 text-[13px] font-medium rounded-full whitespace-nowrap transition-all
-                            ${activeTab === tab.value
-                                ? 'bg-primary text-white'
-                                : 'bg-white/[0.08] text-neutral-300 hover:bg-white/15 hover:text-white'
-                            }`}
-                        onClick={() => setActiveTab(tab.value)}
-                    >
-                        {tab.label}
-                    </button>
-                ))}
-            </div>
+    return movies.filter((movie) => (movie.country || []).some((country) => country.slug === activeFilter));
+  }, [activeFilter, movies]);
 
-            {/* Slider phim cuon ngang */}
-            <HorizontalSlider>
-                {filteredMovies.map((movie) => (
-                    <MovieCard
-                        key={movie._id || movie.slug}
-                        movie={movie}
-                        landscape
-                    />
-                ))}
-            </HorizontalSlider>
-        </section>
-    );
+  if (!movies.length) {
+    return null;
+  }
+
+  return (
+    <section className={`${SECTION_PADDING} ${CONTENT_WRAP} mt-8`}>
+      <SectionHeader title="Đang thịnh hành" />
+
+      <div className="scrollbar-hide mb-5 flex gap-2 overflow-x-auto pb-1">
+        {FILTERS.map((filter) => (
+          <button
+            key={filter.key}
+            type="button"
+            onClick={() => setActiveFilter(filter.key)}
+            className={`rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-wide transition md:text-[13px] ${
+              activeFilter === filter.key
+                ? 'border-primary bg-primary text-white'
+                : 'border-white/15 bg-white/5 text-neutral-300 hover:border-white/35 hover:bg-white/10'
+            }`}
+          >
+            {filter.label}
+          </button>
+        ))}
+      </div>
+
+      <HorizontalSlider>
+        {filtered.map((movie) => (
+          <MovieCard key={movie._id || movie.slug} movie={movie} landscape inSlider cdnBase={cdnBase} />
+        ))}
+      </HorizontalSlider>
+    </section>
+  );
 });
 
 export default TrendingSection;
