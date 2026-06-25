@@ -29,7 +29,7 @@ const loadUser = async (userId) => {
     return user;
 };
 
-// Kiem tra token hop le va chua bi blacklist
+
 const verifyAndDecode = (token) => {
     const tokenHash = TokenUtils.hashToken(token);
     if (tokenBlacklistService.isBlacklisted(tokenHash)) {
@@ -88,7 +88,7 @@ const optionalAuth = async (req, _res, next) => {
                 req.token = token;
             }
         } catch {
-            // Token khong hop le - van cho request di tiep
+            
         }
         next();
     } catch {

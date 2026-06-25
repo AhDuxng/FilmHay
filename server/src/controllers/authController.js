@@ -22,8 +22,6 @@ const getMetadata = (req) => ({
 class AuthController {
     constructor(authService) {
         this.authService = authService;
-
-        // Bind tat ca route handlers voi catchAsync
         this.login = catchAsync(this.login.bind(this));
         this.logout = catchAsync(this.logout.bind(this));
         this.verifyToken = catchAsync(this.verifyToken.bind(this));

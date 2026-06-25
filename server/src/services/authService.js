@@ -84,7 +84,7 @@ class AuthService {
         const newAccessToken = this._createAccessToken(user);
         const newRefreshToken = TokenUtils.generateRefreshToken();
 
-        // Revoke token cu, luu token moi dong thoi
+        
         await Promise.all([
             this._revokeRefreshToken(record.id),
             this._saveRefreshToken(user.id, newRefreshToken, metadata),
@@ -146,7 +146,7 @@ class AuthService {
             .is('revoked_at', null);
     }
 
-    // Public: cho phep controller goi khi logout-all
+    
     blacklistAccessToken(accessToken) {
         if (!accessToken) return;
         const tokenHash = TokenUtils.hashToken(accessToken);

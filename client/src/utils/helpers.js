@@ -14,7 +14,7 @@ export const getImageUrl = (path, cdnBase = IMAGE_CDN_BASE) => {
     return '';
   }
 
-  if (path.startsWith('http://') || path.startsWith('https://')) {
+  if (path.startsWith('http:
     return path;
   }
 

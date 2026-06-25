@@ -23,7 +23,7 @@ const server = app.listen(config.port, () => {
     logger.info(`Server started | port=${config.port} | env=${config.nodeEnv} | api=${config.ophim.baseUrl}`);
 });
 
-// Graceful shutdown
+
 const SHUTDOWN_TIMEOUT = 10_000;
 
 const shutdown = (signal) => {

@@ -7,7 +7,7 @@ export default defineConfig({
     server: {
         port: 5173,
         proxy: {
-            // Proxy API calls den backend trong dev mode
+            
             '/api': {
                 target: 'http://localhost:5000',
                 changeOrigin: true,
@@ -21,7 +21,7 @@ export default defineConfig({
         minify: 'terser',
         terserOptions: {
             compress: {
-                drop_console: true,  // Xoa console.log trong production
+                drop_console: true,  
                 drop_debugger: true,
             },
         },

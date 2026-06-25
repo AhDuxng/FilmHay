@@ -29,7 +29,7 @@ ophimClient.interceptors.response.use(
     }
 );
 
-// Helper chung: fetch co cache va pagination
+
 const fetchList = (cachePrefix, endpoint) => async (page = 1) => {
     return getOrSet(`${cachePrefix}_page_${page}`, async () => {
         const { data } = await ophimClient.get(endpoint, { params: { page } });
@@ -37,7 +37,7 @@ const fetchList = (cachePrefix, endpoint) => async (page = 1) => {
     });
 };
 
-// Helper: validate va sanitize slug
+
 const sanitizeSlug = (value, label = 'Slug') => {
     if (!value || typeof value !== 'string') {
         throw ApiError.badRequest(`${label} khong hop le`);
@@ -92,7 +92,7 @@ const suggestMovies = async (keyword) => {
         const { data } = await ophimClient.get('/tim-kiem', {
             params: { keyword: safe, page: 1 },
         });
-        // Chi tra ve 8 ket qua voi cac truong can thiet
+        
         const items = (data?.data?.items || []).slice(0, 8).map((m) =>
             Object.fromEntries(SUGGEST_FIELDS.map((f) => [f, m[f]]))
         );
@@ -100,7 +100,7 @@ const suggestMovies = async (keyword) => {
     }, 120_000);
 };
 
-// Fetch theo slug category (the loai / quoc gia)
+
 const fetchBySlugCategory = (prefix, basePath, label) => async (slug, page = 1) => {
     const safe = sanitizeSlug(slug, label);
     return getOrSet(`${prefix}_${safe}_page_${page}`, async () => {
