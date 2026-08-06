@@ -43,11 +43,10 @@ const TrendingSection = memo(function TrendingSection({ movies = [], cdnBase = '
             key={filter.key}
             type="button"
             onClick={() => setActiveFilter(filter.key)}
-            className={`rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-wide transition md:text-[13px] ${
-              activeFilter === filter.key
+            className={`rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-wide transition md:text-[13px] ${activeFilter === filter.key
                 ? 'border-primary bg-primary text-white'
                 : 'border-white/15 bg-white/5 text-neutral-300 hover:border-white/35 hover:bg-white/10'
-            }`}
+              }`}
           >
             {filter.label}
           </button>

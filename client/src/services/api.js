@@ -1,6 +1,7 @@
-﻿import axios from 'axios';
+import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_OPHIM_API_URL || 'https://ophim1.com/v1/api';
+const API_ROOT_URL = import.meta.env.VITE_KKPHIM_ROOT_URL || 'https://phimapi.com';
+const API_BASE_URL = import.meta.env.VITE_KKPHIM_API_URL || `${API_ROOT_URL}/v1/api`;
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -10,7 +11,29 @@ const api = axios.create({
   },
 });
 
+const rootApi = axios.create({
+  baseURL: API_ROOT_URL,
+  timeout: 20000,
+  headers: {
+    accept: 'application/json',
+  },
+});
+
 api.interceptors.response.use(
+  (response) => response.data,
+  (error) => {
+    const status = error?.response?.status;
+    const message = error?.response?.data?.message || error?.message || 'Request failed';
+
+    if (status >= 500) {
+      return Promise.reject(new Error('Server is busy. Please retry.'));
+    }
+
+    return Promise.reject(new Error(message));
+  }
+);
+
+rootApi.interceptors.response.use(
   (response) => response.data,
   (error) => {
     const status = error?.response?.status;
@@ -33,13 +56,25 @@ const withPage = (page = 1) => ({
 export const movieApi = {
   getHome: () => api.get('/home'),
 
-  getMovieList: (slug, page = 1) => api.get(`/danh-sach/${slug}`, withPage(page)),
+  getMovieList: (slug = 'phim-moi-cap-nhat', page = 1) =>
+    slug === 'phim-moi-cap-nhat'
+      ? api.get('/danh-sach', withPage(page))
+      : api.get(`/danh-sach/${slug}`, withPage(page)),
 
-  searchMovies: (keyword, page = 1) =>
+  getBrowseList: (page = 1, filters = {}) =>
+    api.get('/danh-sach', {
+      params: {
+        page,
+        ...filters,
+      },
+    }),
+
+  searchMovies: (keyword, page = 1, filters = {}) =>
     api.get('/tim-kiem', {
       params: {
         keyword,
         page,
+        ...filters,
       },
     }),
 
@@ -48,6 +83,7 @@ export const movieApi = {
       params: {
         keyword,
         page: 1,
+        limit,
       },
     });
 
@@ -62,14 +98,14 @@ export const movieApi = {
     };
   },
 
-  getGenreList: () => api.get('/the-loai'),
+  getGenreList: () => rootApi.get('/the-loai'),
   getMoviesByGenre: (slug, page = 1) => api.get(`/the-loai/${slug}`, withPage(page)),
 
-  getCountryList: () => api.get('/quoc-gia'),
+  getCountryList: () => rootApi.get('/quoc-gia'),
   getMoviesByCountry: (slug, page = 1) => api.get(`/quoc-gia/${slug}`, withPage(page)),
 
-  getYearList: () => api.get('/nam-phat-hanh'),
-  getMoviesByYear: (year, page = 1) => api.get(`/nam-phat-hanh/${year}`, withPage(page)),
+  getYearList: () => rootApi.get('/nam-phat-hanh'),
+  getMoviesByYear: (year, page = 1) => api.get(`/nam/${year}`, withPage(page)),
 
   getMovieDetail: (slug) => api.get(`/phim/${slug}`),
   getMovieImages: (slug) => api.get(`/phim/${slug}/images`),

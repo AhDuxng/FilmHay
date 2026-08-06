@@ -128,11 +128,10 @@ function CategoryPage() {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${
-                  item.active
+                className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${item.active
                     ? 'border-primary bg-primary text-white'
                     : 'border-white/15 bg-white/5 text-neutral-300 hover:border-white/35 hover:bg-white/10'
-                }`}
+                  }`}
               >
                 {item.label}
               </Link>

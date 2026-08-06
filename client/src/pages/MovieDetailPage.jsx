@@ -180,11 +180,10 @@ function MovieDetailPage() {
                   setActiveServer(index);
                   setActiveEpisode(0);
                 }}
-                className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${
-                  activeServer === index
+                className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${activeServer === index
                     ? 'border-primary bg-primary text-white'
                     : 'border-white/15 bg-white/5 text-neutral-300 hover:border-white/35 hover:bg-white/10'
-                }`}
+                  }`}
               >
                 {server.server_name || `Server ${index + 1}`}
               </button>
@@ -204,11 +203,10 @@ function MovieDetailPage() {
                   key={episode.slug || `${episode.name}-${index}`}
                   type="button"
                   onClick={() => setActiveEpisode(index)}
-                  className={`rounded-lg border px-2 py-2 text-xs font-semibold transition ${
-                    index === activeEpisode
+                  className={`rounded-lg border px-2 py-2 text-xs font-semibold transition ${index === activeEpisode
                       ? 'border-primary bg-primary text-white'
                       : 'border-white/15 bg-black/25 text-neutral-200 hover:border-white/35 hover:bg-white/10'
-                  }`}
+                    }`}
                 >
                   {episode.name || `Tập ${index + 1}`}
                 </button>

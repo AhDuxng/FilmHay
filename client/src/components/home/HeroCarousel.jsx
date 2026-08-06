@@ -120,9 +120,8 @@ function HeroCarousel({ movies = [], cdnBase = '' }) {
                 key={slide.slug}
                 type="button"
                 onClick={() => setIndex(slides.findIndex((item) => item.slug === slide.slug))}
-                className={`h-2.5 rounded-full transition ${
-                  slides[index]?.slug === slide.slug ? 'w-8 bg-primary' : 'w-2.5 bg-white/40 hover:bg-white/70'
-                }`}
+                className={`h-2.5 rounded-full transition ${slides[index]?.slug === slide.slug ? 'w-8 bg-primary' : 'w-2.5 bg-white/40 hover:bg-white/70'
+                  }`}
                 aria-label={`Slide ${slide.name}`}
               />
             ))}

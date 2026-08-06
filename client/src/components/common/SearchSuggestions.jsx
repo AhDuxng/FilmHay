@@ -64,7 +64,7 @@ const SearchSuggestions = memo(function SearchSuggestions({
         return;
       }
 
-      navigate(`/phim/${slug}`);
+      navigate(`/movie/${slug}`);
       setItems([]);
       setActiveIndex(-1);
       onSelect?.();
@@ -144,9 +144,8 @@ const SearchSuggestions = memo(function SearchSuggestions({
               type="button"
               onMouseEnter={() => setActiveIndex(index)}
               onClick={() => handleSelect(movie.slug)}
-              className={`flex w-full items-center gap-3 border-b border-white/6 px-3 py-2.5 text-left transition last:border-b-0 ${
-                isActive ? 'bg-white/12' : 'hover:bg-white/8'
-              }`}
+              className={`flex w-full items-center gap-3 border-b border-white/6 px-3 py-2.5 text-left transition last:border-b-0 ${isActive ? 'bg-white/12' : 'hover:bg-white/8'
+                }`}
             >
               <img
                 src={imageUrl}
@@ -170,7 +169,7 @@ const SearchSuggestions = memo(function SearchSuggestions({
         <button
           type="button"
           onClick={() => {
-            navigate(`/tim-kiem?keyword=${encodeURIComponent(trimmed)}`);
+            navigate(`/search?q=${encodeURIComponent(trimmed)}`);
             onSelect?.();
             setItems([]);
             setActiveIndex(-1);

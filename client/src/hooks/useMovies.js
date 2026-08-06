@@ -1,4 +1,4 @@
-﻿import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { movieApi } from '../services/api';
 import {
   createPagination,
@@ -24,6 +24,7 @@ const EMPTY_HOME_DATA = {
   single: EMPTY_LIST_DATA,
   anime: EMPTY_LIST_DATA,
   tvShows: EMPTY_LIST_DATA,
+  featured: [],
 };
 
 const EMPTY_DETAIL_DATA = {
@@ -103,12 +104,34 @@ export function useHomeData() {
         movieApi.getMovieList('tv-shows', 1),
       ]);
 
+      const normalizedHome = normalizeListPayload(home);
+      const normalizedSeries = normalizeListPayload(series);
+      const featuredCandidates = [...normalizedHome.items, ...normalizedSeries.items]
+        .filter((item, index, items) => item?.slug && items.findIndex((candidate) => candidate?.slug === item.slug) === index)
+        .slice(0, 4);
+      const featuredResults = await Promise.allSettled(
+        featuredCandidates.map((item) => movieApi.getMovieDetail(item.slug))
+      );
+      const featured = featuredCandidates.map((fallbackMovie, index) => {
+        const result = featuredResults[index];
+
+        if (result?.status === 'fulfilled') {
+          return normalizeMoviePayload(result.value);
+        }
+
+        return {
+          movie: fallbackMovie,
+          cdn: normalizedHome.cdn || normalizedSeries.cdn,
+        };
+      });
+
       return {
-        home: normalizeListPayload(home),
-        series: normalizeListPayload(series),
+        home: normalizedHome,
+        series: normalizedSeries,
         single: normalizeListPayload(single),
         anime: normalizeListPayload(anime),
         tvShows: normalizeListPayload(tvShows),
+        featured,
       };
     },
     [],
@@ -186,10 +209,22 @@ export function useBrowseMetadata() {
         movieApi.getYearList(),
       ]);
 
+      const getItems = (payload) => {
+        if (Array.isArray(payload)) {
+          return payload;
+        }
+
+        if (Array.isArray(payload?.items)) {
+          return payload.items;
+        }
+
+        return payload?.data?.items || [];
+      };
+
       return {
-        genres: genrePayload?.data?.items || [],
-        countries: countryPayload?.data?.items || [],
-        years: yearPayload?.data?.items || [],
+        genres: getItems(genrePayload),
+        countries: getItems(countryPayload),
+        years: getItems(yearPayload),
       };
     },
     [],

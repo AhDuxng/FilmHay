@@ -15,9 +15,8 @@ function NavLinkItem({ to, label, active }) {
   return (
     <Link
       to={to}
-      className={`relative py-2 text-sm font-medium transition ${
-        active ? 'text-white' : 'text-neutral-300 hover:text-white'
-      }`}
+      className={`relative py-2 text-sm font-medium transition ${active ? 'text-white' : 'text-neutral-300 hover:text-white'
+        }`}
     >
       {label}
       {active ? <span className="absolute inset-x-0 -bottom-1 h-0.5 rounded-full bg-primary" /> : null}
@@ -157,9 +156,8 @@ function Navbar() {
 
   return (
     <header
-      className={`fixed inset-x-0 top-0 z-[1100] transition ${
-        scrolled ? 'border-b border-white/10 bg-[#080a10]/95 backdrop-blur-xl' : 'bg-gradient-to-b from-black/85 to-transparent'
-      }`}
+      className={`fixed inset-x-0 top-0 z-[1100] transition ${scrolled ? 'border-b border-white/10 bg-[#080a10]/95 backdrop-blur-xl' : 'bg-gradient-to-b from-black/85 to-transparent'
+        }`}
     >
       <div className="mx-auto flex h-[72px] w-full max-w-[1500px] items-center gap-4 px-4 sm:px-6 md:px-8 lg:px-12">
         <Link to="/" className="inline-flex items-center gap-2 text-white">

@@ -1,4 +1,4 @@
-﻿import { Component } from 'react';
+import { Component } from 'react';
 import { RiBugLine, RiRefreshLine } from 'react-icons/ri';
 
 class ErrorBoundary extends Component {

@@ -1,4 +1,4 @@
-﻿import { memo, useMemo } from 'react';
+import { memo, useMemo } from 'react';
 import { RiArrowLeftSLine, RiArrowRightSLine } from 'react-icons/ri';
 
 function buildPages(currentPage, totalPages) {
@@ -58,11 +58,10 @@ const Pagination = memo(function Pagination({ page, totalPages, onPageChange }) 
             key={item}
             type="button"
             onClick={() => onPageChange(item)}
-            className={`h-10 min-w-10 rounded-full border px-3 text-sm font-semibold transition ${
-              item === page
+            className={`h-10 min-w-10 rounded-full border px-3 text-sm font-semibold transition ${item === page
                 ? 'border-primary bg-primary text-white'
                 : 'border-white/15 bg-white/5 text-neutral-200 hover:border-white/35 hover:bg-white/10'
-            }`}
+              }`}
           >
             {item}
           </button>

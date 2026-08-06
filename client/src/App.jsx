@@ -1,26 +1,31 @@
-﻿import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { Suspense, lazy } from 'react';
-import Navbar from './components/common/Navbar';
-import Footer from './components/common/Footer';
+import { TopNavBar } from './components/common/TopNavBar';
+import { Footer } from './components/common/Footer';
 import Loading from './components/common/Loading';
 import ErrorBoundary from './components/common/ErrorBoundary';
-import PageTransition from './components/common/PageTransition';
 
-const HomePage = lazy(() => import('./pages/HomePage'));
-const MovieDetailPage = lazy(() => import('./pages/MovieDetailPage'));
-const SearchPage = lazy(() => import('./pages/SearchPage'));
+const Home = lazy(() => import('./pages/Home').then(module => ({ default: module.Home })));
+const MovieDetail = lazy(() => import('./pages/MovieDetail').then(module => ({ default: module.MovieDetail })));
+const SearchFilter = lazy(() => import('./pages/SearchFilter').then(module => ({ default: module.SearchFilter })));
+const WatchMovie = lazy(() => import('./pages/WatchMovie').then(module => ({ default: module.WatchMovie })));
 const CategoryPage = lazy(() => import('./pages/CategoryPage'));
 
 function AppLayout() {
+  const location = useLocation();
+  const isWatchPage = location.pathname.startsWith('/watch/');
+
   return (
-    <>
-      <Navbar />
-      <PageTransition />
+    <div className="flex flex-col min-h-screen">
+      {!isWatchPage && <TopNavBar />}
       <Suspense fallback={<Loading fullScreen />}>
         <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/phim/:slug" element={<MovieDetailPage />} />
-          <Route path="/tim-kiem" element={<SearchPage />} />
+          <Route path="/" element={<Home />} />
+          <Route path="/movie/:id" element={<MovieDetail />} />
+          <Route path="/phim/:id" element={<MovieDetail />} />
+          <Route path="/watch/:id" element={<WatchMovie />} />
+          <Route path="/search" element={<SearchFilter />} />
+          <Route path="/tim-kiem" element={<SearchFilter />} />
           <Route path="/danh-sach/:slug" element={<CategoryPage />} />
           <Route path="/the-loai/:slug" element={<CategoryPage />} />
           <Route path="/quoc-gia/:slug" element={<CategoryPage />} />
@@ -28,8 +33,8 @@ function AppLayout() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>
-      <Footer />
-    </>
+      {!isWatchPage && <Footer />}
+    </div>
   );
 }
 

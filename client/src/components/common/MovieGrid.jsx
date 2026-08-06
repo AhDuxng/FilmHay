@@ -1,4 +1,4 @@
-﻿import { memo } from 'react';
+import { memo } from 'react';
 import MovieCard from './MovieCard';
 import { MOVIE_GRID_CLASS } from '../../utils/helpers';
 
