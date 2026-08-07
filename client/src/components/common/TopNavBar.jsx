@@ -7,7 +7,7 @@ const navItems = [
   { label: 'Trang chủ', path: '/' },
   { label: 'Phim bộ', path: '/danh-sach/phim-bo' },
   { label: 'Phim lẻ', path: '/danh-sach/phim-le' },
-  { label: 'Hoạt hình', path: '/danh-sach/hoat-hinh' },
+  { label: 'Hoạt hình', path: '/the-loai/hoat-hinh' },
   { label: 'Tìm kiếm', path: '/search' },
 ];
 

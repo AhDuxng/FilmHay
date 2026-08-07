@@ -13,7 +13,7 @@ export const FilterSidebar = ({ filters, onChange, genres = [], countries = [], 
       <div className="glass-panel rounded-xl p-6 flex flex-col gap-6">
         <div className="flex justify-between items-center border-b border-white/10 pb-4">
           <h2 className="font-headline-md text-body-lg font-semibold text-on-surface">Bộ lọc</h2>
-          <button type="button" onClick={reset} className="font-label-sm text-label-sm text-secondary hover:text-primary transition-colors uppercase tracking-wider">Reset</button>
+          <button type="button" onClick={reset} className="font-label-sm text-label-sm text-secondary hover:text-primary transition-colors uppercase tracking-wider">Đặt lại</button>
         </div>
         
         <div className="flex flex-col gap-3">

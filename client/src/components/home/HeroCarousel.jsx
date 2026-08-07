@@ -66,7 +66,7 @@ function HeroCarousel({ movies = [], cdnBase = '' }) {
 
               <div className="absolute bottom-10 left-6 right-6 z-10 max-w-2xl md:bottom-16 md:left-12">
                 <p className="mb-3 inline-flex rounded-full bg-primary px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-white">
-                  Featured
+                  Nổi bật
                 </p>
                 <h1 className="text-3xl font-black leading-tight text-white md:text-5xl">{movie.name}</h1>
                 <p className="mt-3 line-clamp-2 text-sm text-neutral-300 md:text-base">
@@ -100,7 +100,7 @@ function HeroCarousel({ movies = [], cdnBase = '' }) {
             type="button"
             onClick={() => setIndex((prev) => (prev - 1 + slides.length) % slides.length)}
             className="absolute left-4 top-1/2 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/25 bg-black/45 text-white opacity-0 backdrop-blur transition group-hover:opacity-100 md:flex"
-            aria-label="Previous slide"
+            aria-label="Trang trước"
           >
             <RiArrowLeftSLine className="text-2xl" />
           </button>
@@ -109,7 +109,7 @@ function HeroCarousel({ movies = [], cdnBase = '' }) {
             type="button"
             onClick={() => setIndex((prev) => (prev + 1) % slides.length)}
             className="absolute right-4 top-1/2 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/25 bg-black/45 text-white opacity-0 backdrop-blur transition group-hover:opacity-100 md:flex"
-            aria-label="Next slide"
+            aria-label="Trang tiếp"
           >
             <RiArrowRightSLine className="text-2xl" />
           </button>
@@ -122,7 +122,7 @@ function HeroCarousel({ movies = [], cdnBase = '' }) {
                 onClick={() => setIndex(slides.findIndex((item) => item.slug === slide.slug))}
                 className={`h-2.5 rounded-full transition ${slides[index]?.slug === slide.slug ? 'w-8 bg-primary' : 'w-2.5 bg-white/40 hover:bg-white/70'
                   }`}
-                aria-label={`Slide ${slide.name}`}
+                aria-label={`Chuyển sang ${slide.name}`}
               />
             ))}
           </div>

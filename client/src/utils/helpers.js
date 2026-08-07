@@ -73,8 +73,11 @@ export const normalizeMoviePayload = (payload) => {
   const data = payload?.data || payload || {};
   const movie = data.item || data.movie || payload?.movie || null;
 
+  // VSMov returns episodes at root level, not inside the movie object
+  const episodes = data.episodes || payload?.episodes || movie?.episodes || [];
+
   return {
-    movie,
+    movie: movie ? { ...movie, episodes } : null,
     cdn: data.APP_DOMAIN_CDN_IMAGE || data.pathImage || payload?.pathImage || IMAGE_CDN_BASE,
     seo: data.seoOnPage || null,
   };

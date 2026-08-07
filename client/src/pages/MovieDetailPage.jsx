@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 import DOMPurify from 'dompurify';
 import { Link, useParams } from 'react-router-dom';
 import {
@@ -37,20 +37,9 @@ function getBackdropImage(path) {
 function MovieDetailPage() {
   const { slug } = useParams();
   const { data, loading, error, refetch } = useMovieDetail(slug);
-  const [activeServer, setActiveServer] = useState(0);
-  const [activeEpisode, setActiveEpisode] = useState(0);
-  const playerRef = useRef(null);
 
   const movie = data.movie;
-  const servers = movie?.episodes || [];
-  const serverData = servers[activeServer]?.server_data || [];
-  const currentEpisode = serverData[activeEpisode] || null;
   const viewCount = Number(movie?.view || 0);
-
-  useEffect(() => {
-    setActiveServer(0);
-    setActiveEpisode(0);
-  }, [slug]);
 
   usePageTitle(movie?.name || 'Chi tiết phim');
 
@@ -139,81 +128,18 @@ function MovieDetailPage() {
                 </Link>
               ))}
             </div>
-          </div>
-        </div>
-      </section>
 
-      <section ref={playerRef} className={`${PAGE_PADDING} ${CONTENT_WRAP} pt-8`}>
-        <div className="overflow-hidden rounded-2xl border border-white/10 bg-black">
-          {currentEpisode?.link_embed ? (
-            <iframe
-              title={episodeLabel}
-              src={currentEpisode.link_embed}
-              allow="autoplay; encrypted-media"
-              allowFullScreen
-              className="aspect-video w-full"
-              referrerPolicy="no-referrer"
-            />
-          ) : currentEpisode?.link_m3u8 ? (
-            <video controls autoPlay className="aspect-video w-full" src={currentEpisode.link_m3u8} />
-          ) : (
-            <div className="flex aspect-video w-full items-center justify-center text-sm text-neutral-400">
-              Nguồn phát hiện chưa sẵn sàng
-            </div>
-          )}
-        </div>
-
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <p className="text-sm text-neutral-400">Đang phát</p>
-            <h2 className="text-xl font-bold text-white">{episodeLabel}</h2>
-          </div>
-        </div>
-
-        {servers.length > 1 ? (
-          <div className="mt-4 flex flex-wrap gap-2">
-            {servers.map((server, index) => (
-              <button
-                key={`${server.server_name}-${index}`}
-                type="button"
-                onClick={() => {
-                  setActiveServer(index);
-                  setActiveEpisode(0);
-                }}
-                className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition ${activeServer === index
-                    ? 'border-primary bg-primary text-white'
-                    : 'border-white/15 bg-white/5 text-neutral-300 hover:border-white/35 hover:bg-white/10'
-                  }`}
+            <div className="mt-8 flex gap-4">
+              <Link
+                to={`/watch/${movie.slug}`}
+                className="inline-flex items-center gap-2 rounded-full bg-primary px-8 py-3.5 text-sm font-bold text-white transition hover:scale-105 hover:bg-primary/90"
               >
-                {server.server_name || `Server ${index + 1}`}
-              </button>
-            ))}
-          </div>
-        ) : null}
-
-        {serverData.length ? (
-          <div className="mt-5 rounded-2xl border border-white/10 bg-white/5 p-4">
-            <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-white">
-              <RiPlayCircleFill className="text-lg text-primary" />
-              Danh sách tập
-            </div>
-            <div className="grid max-h-[300px] grid-cols-3 gap-2 overflow-y-auto pr-1 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">
-              {serverData.map((episode, index) => (
-                <button
-                  key={episode.slug || `${episode.name}-${index}`}
-                  type="button"
-                  onClick={() => setActiveEpisode(index)}
-                  className={`rounded-lg border px-2 py-2 text-xs font-semibold transition ${index === activeEpisode
-                      ? 'border-primary bg-primary text-white'
-                      : 'border-white/15 bg-black/25 text-neutral-200 hover:border-white/35 hover:bg-white/10'
-                    }`}
-                >
-                  {episode.name || `Tập ${index + 1}`}
-                </button>
-              ))}
+                <RiPlayCircleFill className="text-xl" />
+                XEM PHIM
+              </Link>
             </div>
           </div>
-        ) : null}
+        </div>
       </section>
 
       <section className={`${PAGE_PADDING} ${CONTENT_WRAP} pt-3`}>
@@ -308,7 +234,7 @@ function MovieDetailPage() {
 
       {images.length ? (
         <section className={`${PAGE_PADDING} ${CONTENT_WRAP} pt-2`}>
-          <h3 className="mb-4 text-xl font-bold text-white">Gallery</h3>
+          <h3 className="mb-4 text-xl font-bold text-white">Hình ảnh phim</h3>
           <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
             {images.map((image, index) => (
               <a
@@ -320,7 +246,7 @@ function MovieDetailPage() {
               >
                 <img
                   src={getBackdropImage(image.file_path)}
-                  alt={`Backdrop ${index + 1}`}
+                  alt={`Hình ảnh phim ${index + 1}`}
                   className="aspect-video w-full object-cover transition duration-300 group-hover:scale-105"
                 />
               </a>

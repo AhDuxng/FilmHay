@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-const API_ROOT_URL = import.meta.env.VITE_KKPHIM_ROOT_URL || 'https://phimapi.com';
-const API_BASE_URL = import.meta.env.VITE_KKPHIM_API_URL || `${API_ROOT_URL}/v1/api`;
+const API_ROOT_URL = import.meta.env.VITE_VSMOV_ROOT_URL || 'https://vsmov.com/api';
+const API_BASE_URL = import.meta.env.VITE_VSMOV_API_URL || API_ROOT_URL;
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -23,10 +23,10 @@ api.interceptors.response.use(
   (response) => response.data,
   (error) => {
     const status = error?.response?.status;
-    const message = error?.response?.data?.message || error?.message || 'Request failed';
+    const message = error?.response?.data?.message || error?.message || 'Yêu cầu thất bại';
 
     if (status >= 500) {
-      return Promise.reject(new Error('Server is busy. Please retry.'));
+      return Promise.reject(new Error('Máy chủ đang bận. Vui lòng thử lại.'));
     }
 
     return Promise.reject(new Error(message));
@@ -54,11 +54,11 @@ const withPage = (page = 1) => ({
 });
 
 export const movieApi = {
-  getHome: () => api.get('/home'),
+  getHome: () => api.get('/danh-sach/phim-moi-cap-nhat', withPage(1)),
 
   getMovieList: (slug = 'phim-moi-cap-nhat', page = 1) =>
     slug === 'phim-moi-cap-nhat'
-      ? api.get('/danh-sach', withPage(page))
+      ? api.get('/danh-sach/phim-moi-cap-nhat', withPage(page))
       : api.get(`/danh-sach/${slug}`, withPage(page)),
 
   getBrowseList: (page = 1, filters = {}) =>

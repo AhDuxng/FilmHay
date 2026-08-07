@@ -14,7 +14,7 @@ export const HeroSection = ({ movies = [], movie: fallbackMovie, cdnBase = '' })
   const [activeIndex, setActiveIndex] = useState(0);
   const activeSlide = slides[activeIndex] || slides[0] || {};
   const movie = activeSlide.movie;
-  const title = movie?.name || 'Kho phim KKPhim';
+  const title = movie?.name || 'Kho phim VSMov';
   const originalTitle = movie?.origin_name || 'Phim mới cập nhật mỗi ngày';
   const meta = [
     movie?.quality,
@@ -53,7 +53,7 @@ export const HeroSection = ({ movies = [], movie: fallbackMovie, cdnBase = '' })
               aria-hidden="true"
               className={`absolute inset-0 h-full w-full object-cover object-center transition-opacity duration-700 ${index === activeIndex ? 'opacity-100' : 'opacity-0'}`}
               src={getThumbUrl(slide.movie, slide.cdn || cdnBase)}
-              fetchPriority={index === 0 ? 'high' : 'auto'}
+              fetchpriority={index === 0 ? 'high' : 'auto'}
               decoding="async"
               onError={handleImageError}
             />
@@ -65,10 +65,7 @@ export const HeroSection = ({ movies = [], movie: fallbackMovie, cdnBase = '' })
       </div>
       <div className="relative z-10 mx-auto w-full max-w-container-max px-margin-mobile pt-24 md:px-margin-desktop md:pt-20">
         <div className="max-w-2xl">
-          <div className="flex items-center gap-3 mb-4">
-            <span className="text-primary-container font-headline-md font-bold text-headline-md tracking-widest">K</span>
-            <span className="font-label-sm text-label-sm tracking-widest text-secondary uppercase bg-surface-container-high px-2 py-1 rounded">KKPhim</span>
-          </div>
+
           <h1 className="mb-5 line-clamp-3 max-w-3xl font-display-lg text-4xl font-bold leading-tight text-white drop-shadow-2xl sm:text-5xl lg:text-6xl">
             {title}
           </h1>

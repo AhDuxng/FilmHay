@@ -12,12 +12,9 @@ const WatchMovie = lazy(() => import('./pages/WatchMovie').then(module => ({ def
 const CategoryPage = lazy(() => import('./pages/CategoryPage'));
 
 function AppLayout() {
-  const location = useLocation();
-  const isWatchPage = location.pathname.startsWith('/watch/');
-
   return (
     <div className="flex flex-col min-h-screen">
-      {!isWatchPage && <TopNavBar />}
+      <TopNavBar />
       <Suspense fallback={<Loading fullScreen />}>
         <Routes>
           <Route path="/" element={<Home />} />
@@ -33,7 +30,7 @@ function AppLayout() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>
-      {!isWatchPage && <Footer />}
+      <Footer />
     </div>
   );
 }

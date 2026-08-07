@@ -5,8 +5,8 @@ export const NAV_LINKS = [
   { label: 'Phim mới', path: '/danh-sach/phim-moi-cap-nhat' },
   { label: 'Phim bộ', path: '/danh-sach/phim-bo' },
   { label: 'Phim lẻ', path: '/danh-sach/phim-le' },
-  { label: 'Hoạt hình', path: '/danh-sach/hoat-hinh' },
-  { label: 'TV Shows', path: '/danh-sach/tv-shows' },
+  { label: 'Hoạt hình', path: '/the-loai/hoat-hinh' },
+  { label: 'TV Shows', path: '/the-loai/truyen-hinh-thuc-te' },
 ];
 
 export const LIST_TITLES = {
@@ -14,15 +14,15 @@ export const LIST_TITLES = {
   'phim-bo': 'Phim bộ',
   'phim-le': 'Phim lẻ',
   'hoat-hinh': 'Hoạt hình',
-  'tv-shows': 'TV Shows',
+  'truyen-hinh-thuc-te': 'TV Shows',
 };
 
 export const LIST_QUICK_LINKS = [
   { label: 'Phim mới', path: '/danh-sach/phim-moi-cap-nhat' },
   { label: 'Phim bộ', path: '/danh-sach/phim-bo' },
   { label: 'Phim lẻ', path: '/danh-sach/phim-le' },
-  { label: 'Hoạt hình', path: '/danh-sach/hoat-hinh' },
-  { label: 'TV Shows', path: '/danh-sach/tv-shows' },
+  { label: 'Hoạt hình', path: '/the-loai/hoat-hinh' },
+  { label: 'TV Shows', path: '/the-loai/truyen-hinh-thuc-te' },
   { label: 'Hàn Quốc', path: '/quoc-gia/han-quoc' },
   { label: 'Trung Quốc', path: '/quoc-gia/trung-quoc' },
   { label: 'Âu Mỹ', path: '/quoc-gia/au-my' },
@@ -31,8 +31,8 @@ export const LIST_QUICK_LINKS = [
 export const HOME_SECTIONS = [
   { key: 'series', title: 'Phim bộ hot', path: '/danh-sach/phim-bo' },
   { key: 'single', title: 'Phim lẻ mới', path: '/danh-sach/phim-le' },
-  { key: 'anime', title: 'Hoạt hình nổi bật', path: '/danh-sach/hoat-hinh' },
-  { key: 'tvShows', title: 'TV Shows được xem nhiều', path: '/danh-sach/tv-shows' },
+  { key: 'anime', title: 'Hoạt hình nổi bật', path: '/the-loai/hoat-hinh' },
+  { key: 'tvShows', title: 'TV Shows được xem nhiều', path: '/the-loai/truyen-hinh-thuc-te' },
 ];
 
 export const SEARCH_MIN_CHARS = 2;

@@ -73,7 +73,7 @@ export function useQuery(queryFn, deps = [], options = {}) {
       }
     } catch (queryError) {
       if (requestRef.current === requestId) {
-        setError(queryError.message || 'Unable to load data');
+        setError(queryError.message || 'Không thể tải dữ liệu');
       }
     } finally {
       if (requestRef.current === requestId) {
@@ -100,8 +100,8 @@ export function useHomeData() {
         movieApi.getHome(),
         movieApi.getMovieList('phim-bo', 1),
         movieApi.getMovieList('phim-le', 1),
-        movieApi.getMovieList('hoat-hinh', 1),
-        movieApi.getMovieList('tv-shows', 1),
+        movieApi.getMoviesByGenre('hoat-hinh', 1).catch(() => EMPTY_LIST_DATA),
+        movieApi.getMoviesByGenre('truyen-hinh-thuc-te', 1).catch(() => EMPTY_LIST_DATA),
       ]);
 
       const normalizedHome = normalizeListPayload(home);
@@ -177,19 +177,13 @@ export function useMovieDetail(slug) {
   return useQuery(
     async () => {
       const detail = await movieApi.getMovieDetail(slug);
-      const [images, peoples, keywords] = await Promise.allSettled([
-        movieApi.getMovieImages(slug),
-        movieApi.getMoviePeoples(slug),
-        movieApi.getMovieKeywords(slug),
-      ]);
-
       const detailData = normalizeMoviePayload(detail);
 
       return {
         ...detailData,
-        images: images.status === 'fulfilled' ? sanitizeImages(images.value) : [],
-        peoples: peoples.status === 'fulfilled' ? sanitizePeoples(peoples.value) : [],
-        keywords: keywords.status === 'fulfilled' ? sanitizeKeywords(keywords.value) : [],
+        images: [],
+        peoples: [],
+        keywords: [],
       };
     },
     [slug],
