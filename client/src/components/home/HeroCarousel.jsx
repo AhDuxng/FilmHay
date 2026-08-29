@@ -40,7 +40,7 @@ function HeroCarousel({ movies = [], cdnBase = '' }) {
   if (!slides.length) {
     return (
       <section className="relative h-[68vh] min-h-[440px] overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_10%_20%,#8d0b11_0,#0c1018_45%,#080a10_100%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_10%_20%,#9d174d_0,#0c1018_45%,#080a10_100%)]" />
       </section>
     );
   }

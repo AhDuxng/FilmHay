@@ -59,7 +59,7 @@ export const HeroSection = ({ movies = [], movie: fallbackMovie, cdnBase = '' })
             />
           ))
         ) : (
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,#6b0d13_0,#171717_45%,#0f0f0f_100%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,#831843_0,#171717_45%,#0f0f0f_100%)]" />
         )}
         <div className="absolute inset-0 hero-gradient"></div>
       </div>
@@ -79,7 +79,7 @@ export const HeroSection = ({ movies = [], movie: fallbackMovie, cdnBase = '' })
             {categoryText || buildMetaText(movie) || originalTitle}
           </p>
           <div className="flex flex-wrap items-center gap-3 sm:gap-4">
-            <Link to={movie?.slug ? `/movie/${movie.slug}` : '/search'} className="flex min-h-12 items-center gap-2 rounded-lg bg-primary-container px-5 py-3 font-headline-md text-base font-bold text-white transition-colors hover:bg-[#f6121d] active:bg-[#c90811] sm:px-7">
+            <Link to={movie?.slug ? `/movie/${movie.slug}` : '/search'} className="flex min-h-12 items-center gap-2 rounded-lg bg-primary-container px-5 py-3 font-headline-md text-base font-bold text-white transition-colors hover:bg-primary-strong active:bg-[#be185d] sm:px-7">
               <RiPlayFill className="h-5 w-5 shrink-0" aria-hidden="true" />
               Xem ngay
             </Link>

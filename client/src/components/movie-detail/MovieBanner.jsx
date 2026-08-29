@@ -59,7 +59,7 @@ export const MovieBanner = ({ movie, cdnBase = '', images = [] }) => {
             ) : null}
           </div>
           <div className="flex items-center gap-4">
-            <Link to={`/watch/${movie.slug}`} className="flex min-h-12 items-center gap-2 rounded-lg bg-primary-container px-6 py-3 font-headline-md text-base font-bold text-white transition-colors hover:bg-[#f6121d] sm:px-8">
+            <Link to={`/watch/${movie.slug}`} className="flex min-h-12 items-center gap-2 rounded-lg bg-primary-container px-6 py-3 font-headline-md text-base font-bold text-white transition-colors hover:bg-primary-strong sm:px-8">
               <RiPlayFill className="h-5 w-5 shrink-0" aria-hidden="true" />
               Xem phim
             </Link>

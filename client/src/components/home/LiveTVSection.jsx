@@ -7,7 +7,7 @@ import HorizontalSlider from '../common/HorizontalSlider';
 const channels = [
   { name: 'Thể thao 24h', desc: 'Diễn biến mới nhất', tone: 'from-[#4f1d95] to-[#7c3aed]' },
   { name: 'Giải trí tổng hợp', desc: 'Talkshow và reality', tone: 'from-[#0f766e] to-[#14b8a6]' },
-  { name: 'Anime Plus', desc: 'Marathon anime', tone: 'from-[#be185d] to-[#f43f5e]' },
+  { name: 'Anime Plus', desc: 'Marathon anime', tone: 'from-[#db2777] to-[#f472b6]' },
   { name: 'Cinema Action', desc: 'Bom tấn hành động', tone: 'from-[#9a3412] to-[#ea580c]' },
 ];
 

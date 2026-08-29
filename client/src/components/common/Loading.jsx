@@ -1,14 +1,21 @@
 import { memo } from 'react';
-import { RiLoader4Line, RiPlayMiniFill } from 'react-icons/ri';
+import { RiPlayMiniFill } from 'react-icons/ri';
 
 const Loading = memo(function Loading({ fullScreen = false }) {
   return (
-    <div className={`flex flex-col items-center justify-center gap-3 ${fullScreen ? 'min-h-screen' : 'min-h-[220px]'}`}>
-      <div className="relative">
-        <RiLoader4Line className="text-5xl text-primary animate-spin" />
-        <RiPlayMiniFill className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-lg text-white" />
+    <div
+      className={`site-loader flex flex-col items-center justify-center gap-4 ${fullScreen ? 'min-h-screen' : 'min-h-[220px]'}`}
+      role="status"
+      aria-live="polite"
+    >
+      <div className="site-loader__visual" aria-hidden="true">
+        <span className="site-loader__glow" />
+        <span className="site-loader__orbit" />
+        <span className="site-loader__core">
+          <RiPlayMiniFill className="ml-0.5 text-2xl" />
+        </span>
       </div>
-      <p className="text-sm text-neutral-400">Đang tải dữ liệu...</p>
+      <p className="site-loader__label text-sm font-medium tracking-wide">Đang tải dữ liệu...</p>
     </div>
   );
 });
