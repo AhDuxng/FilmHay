@@ -1,0 +1,379 @@
+@import './tokens.css';
+@import 'tailwindcss';
+
+/* ---------------------------------------------------------------------------
+ * The theme keeps every token name the components already use, so the Netflix
+ * layout is untouched — only the values behind the names changed. Surfaces
+ * come from VS Code Dark+; anything that carries colour indexes into the one
+ * shared ramp, spread across roles rather than repeating a single accent hue.
+ * ------------------------------------------------------------------------ */
+/* ---------------------------------------------------------------------------
+ * The theme keeps every token name the components already use, so the Netflix
+ * layout is untouched — only the values behind the names changed. `@theme
+ * inline` makes each utility emit `rgb(var(--canvas))` rather than a snapshot
+ * of it, so flipping [data-theme] on the root element repaints the whole tree
+ * with no `dark:` variant anywhere in the components.
+ * ------------------------------------------------------------------------ */
+@theme inline {
+  /* --- Surfaces --------------------------------------------------------- */
+  --color-background: rgb(var(--canvas));
+  --color-surface: rgb(var(--canvas));
+  --color-surface-dim: rgb(var(--sunken));
+  --color-surface-bright: rgb(var(--elevated-3));
+  --color-surface-container-lowest: rgb(var(--sunken));
+  --color-surface-container-low: rgb(var(--canvas));
+  --color-surface-container: rgb(var(--elevated-1));
+  --color-surface-container-high: rgb(var(--elevated-2));
+  --color-surface-container-highest: rgb(var(--elevated-3));
+  --color-surface-variant: rgb(var(--elevated-2));
+  --color-surface-tint: var(--ramp-text-3);
+  --color-outline: rgb(var(--line));
+  --color-outline-strong: rgb(var(--line-strong));
+  --color-outline-variant: var(--ramp-text-6);
+
+  /* --- Text ------------------------------------------------------------- */
+  --color-on-background: rgb(var(--ink));
+  --color-on-surface: rgb(var(--ink));
+  --color-on-surface-variant: rgb(var(--muted));
+  --color-secondary: rgb(var(--muted));
+  --color-secondary-fixed: rgb(var(--ink));
+  --color-secondary-fixed-dim: rgb(var(--ink-soft));
+  --color-on-secondary: rgb(var(--canvas));
+  --color-on-secondary-container: rgb(var(--ink));
+  --color-on-secondary-fixed: rgb(var(--canvas));
+  --color-on-secondary-fixed-variant: rgb(var(--muted));
+  --color-secondary-container: rgb(var(--elevated-2));
+  --color-inverse-surface: rgb(var(--ink));
+  --color-inverse-on-surface: rgb(var(--canvas));
+  --color-tertiary: rgb(var(--muted));
+  --color-tertiary-fixed: rgb(var(--ink));
+  --color-tertiary-fixed-dim: rgb(var(--ink-soft));
+  --color-tertiary-container: rgb(var(--elevated-2));
+  --color-on-tertiary: rgb(var(--canvas));
+  --color-on-tertiary-container: rgb(var(--ink));
+  --color-on-tertiary-fixed: rgb(var(--canvas));
+  --color-on-tertiary-fixed-variant: rgb(var(--muted));
+
+  /*
+   * --- Accents ----------------------------------------------------------
+   * Roles land on different stops instead of every accent being one hue.
+   * Anything that carries TEXT uses the text-safe ramp, which is the vivid
+   * ramp on dark and its darkened twin on light. --color-primary-container is
+   * the exception: it is a FILL under white labels, and the violet stop is the
+   * one that carries white at 4.7:1 on either theme.
+   */
+  --color-primary: var(--ramp-text-3);
+  --color-primary-strong: var(--ramp-text-2);
+  --color-primary-container: var(--ramp-5);
+  --color-primary-fixed: var(--ramp-text-0);
+  --color-primary-fixed-dim: var(--ramp-text-1);
+  --color-on-primary: rgb(var(--canvas));
+  --color-on-primary-container: #ffffff;
+  --color-on-primary-fixed: rgb(var(--canvas));
+  --color-on-primary-fixed-variant: var(--ramp-text-5);
+  --color-inverse-primary: var(--ramp-text-6);
+  --color-error: var(--ramp-text-3);
+  --color-error-container: var(--ramp-5);
+  --color-on-error: rgb(var(--canvas));
+  --color-on-error-container: #ffffff;
+}
+
+@theme {
+  /* --- Layout ----------------------------------------------------------- */
+  --spacing-container-max: 1440px;
+  --spacing-gutter: 24px;
+  --spacing-margin-desktop: 64px;
+  --spacing-margin-mobile: 16px;
+  --spacing-unit: 8px;
+
+  /* --- Type: Poppins to read, JetBrains Mono for data -------------------- */
+  --font-sans: "Poppins", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  --font-display-lg: "Poppins", sans-serif;
+  --font-headline-lg: "Poppins", sans-serif;
+  --font-headline-md: "Poppins", sans-serif;
+  --font-headline-lg-mobile: "Poppins", sans-serif;
+  --font-body-lg: "Poppins", sans-serif;
+  --font-body-md: "Poppins", sans-serif;
+  /* Badges, counters, years, qualities and episode labels all carry this one
+     already, so metadata turns mono with no change to the markup. */
+  --font-label-sm: "JetBrains Mono", ui-monospace, monospace;
+
+  --text-display-lg: 64px;
+  --text-display-lg--line-height: 72px;
+  --text-display-lg--letter-spacing: -0.02em;
+  --text-display-lg--font-weight: 700;
+
+  --text-headline-lg: 32px;
+  --text-headline-lg--line-height: 40px;
+  --text-headline-lg--font-weight: 600;
+
+  --text-headline-md: 24px;
+  --text-headline-md--line-height: 32px;
+  --text-headline-md--font-weight: 600;
+
+  --text-label-sm: 12px;
+  --text-label-sm--line-height: 16px;
+  --text-label-sm--letter-spacing: 0.04em;
+  --text-label-sm--font-weight: 500;
+
+  --text-body-lg: 18px;
+  --text-body-lg--line-height: 28px;
+  --text-body-lg--font-weight: 400;
+
+  --text-body-md: 16px;
+  --text-body-md--line-height: 24px;
+  --text-body-md--font-weight: 400;
+
+  --text-headline-lg-mobile: 24px;
+  --text-headline-lg-mobile--line-height: 32px;
+  --text-headline-lg-mobile--font-weight: 600;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: rgb(var(--canvas));
+  color: rgb(var(--ink));
+  font-family: "Poppins", Arial, sans-serif;
+  overflow-x: hidden;
+  transition: background-color 0.25s var(--ease), color 0.25s var(--ease);
+}
+
+button,
+a,
+input,
+select {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button,
+select {
+  cursor: pointer;
+}
+
+img {
+  display: block;
+}
+
+::selection {
+  background: var(--ramp-0);
+  color: #12121a;
+}
+
+/* --- Ramp type and fills ---------------------------------------------------
+ * Every stop is written out as its own var(): a custom property that expands
+ * to a comma-separated list inside linear-gradient() is a substitution Safari
+ * does not reliably perform, and transparent text on an invalid background is
+ * not there at all.
+ */
+.text-ramp {
+  background-image: linear-gradient(
+    115deg,
+    var(--ramp-text-0), var(--ramp-text-1), var(--ramp-text-2),
+    var(--ramp-text-3), var(--ramp-text-4), var(--ramp-text-5),
+    var(--ramp-text-6), var(--ramp-text-7), var(--ramp-text-8)
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: rgb(var(--ink));
+}
+
+/* Clipping the background to the glyphs is the only reason the colour can be
+   dropped. Without the guard, a browser that ignores background-clip renders
+   nothing at all. */
+@supports (-webkit-background-clip: text) or (background-clip: text) {
+  .text-ramp {
+    color: transparent;
+  }
+}
+
+/* The violet stop is deliberately absent: near-black label text lands at
+   3.96:1 over it, and since the gradient slides on hover the label would drift
+   in and out of legibility. Every stop used here clears 5:1. */
+.fill-ramp {
+  background-image: linear-gradient(
+    115deg,
+    var(--ramp-0), var(--ramp-1), var(--ramp-2),
+    var(--ramp-3), var(--ramp-7), var(--ramp-8)
+  );
+  background-size: 220% 100%;
+  color: #12121a;
+  transition: background-position 0.6s var(--ease);
+}
+
+.fill-ramp:hover {
+  background-position: 100% 50%;
+}
+
+/* --- Always-dark islands ---------------------------------------------------
+ * The video stage and every scrim laid over artwork stay dark in both themes:
+ * that is what makes white text and the vivid ramp readable on top of them.
+ * Redeclaring the tokens in scope beats hand-picking colours on each child —
+ * `@theme inline` means every utility resolves these at the element, so a
+ * subtree just inherits the dark palette.
+ */
+.on-dark {
+  color-scheme: dark;
+
+  --canvas: 12 12 14;
+  --sunken: 8 8 10;
+  --elevated-1: 26 26 28;
+  --elevated-2: 34 34 37;
+  --elevated-3: 44 44 48;
+  --ink: 240 240 240;
+  --ink-soft: 206 206 206;
+  --muted: 170 170 170;
+  --line: 255 255 255;
+  --line-strong: 255 255 255;
+
+  --ramp-text-0: var(--ramp-0);
+  --ramp-text-1: var(--ramp-1);
+  --ramp-text-2: var(--ramp-2);
+  --ramp-text-3: var(--ramp-3);
+  --ramp-text-4: var(--ramp-4);
+  --ramp-text-5: var(--ramp-5);
+  --ramp-text-6: var(--ramp-6);
+  --ramp-text-7: var(--ramp-7);
+  --ramp-text-8: var(--ramp-8);
+}
+
+/* Hairlines inside a dark island are white at low alpha, not a solid rule. */
+.on-dark .border-outline {
+  border-color: rgb(255 255 255 / 0.14);
+}
+
+.on-dark .border-outline-strong {
+  border-color: rgb(255 255 255 / 0.34);
+}
+
+.glass-panel {
+  background: rgb(var(--elevated-1) / 0.66);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgb(var(--line));
+}
+
+.movie-card {
+  aspect-ratio: 2/3;
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.3s ease;
+}
+
+.movie-card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 24px rgba(251, 124, 120, 0.28);
+  z-index: 10;
+}
+
+/* --- The cube --------------------------------------------------------------
+ * A 3D transform or a clip-path on ANY ancestor flattens preserve-3d and crops
+ * the faces that stand out of the box, so the cube is never wrapped in an
+ * animating container and always gets padding around it.
+ */
+.cube-scene {
+  display: grid;
+  place-items: center;
+  perspective: 900px;
+}
+
+.cube {
+  position: relative;
+  transform-style: preserve-3d;
+  animation: cube-spin 14s linear infinite;
+}
+
+.cube-static {
+  animation: none;
+  transform: rotateX(-24deg) rotateY(-34deg);
+}
+
+.cube-face {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 4%;
+  padding: 4%;
+  background: #15151a;
+  backface-visibility: hidden;
+}
+
+.cube-sticker {
+  border-radius: 12%;
+  transition: background-color 0.28s var(--ease);
+}
+
+@keyframes cube-spin {
+  from { transform: rotateX(-24deg) rotateY(0deg); }
+  to { transform: rotateX(-24deg) rotateY(360deg); }
+}
+
+.movie-card-overlay {
+  opacity: 1;
+  transition: opacity 0.3s ease;
+  background: linear-gradient(to top, rgba(10, 10, 12, 0.96) 0%, rgba(10, 10, 12, 0.4) 48%, transparent 72%);
+}
+
+@media (min-width: 768px) {
+  .movie-card-overlay {
+    opacity: 0;
+  }
+
+  .movie-card:hover .movie-card-overlay {
+    opacity: 1;
+  }
+}
+
+/* Both names are in use across the carousels; the original stylesheet only
+   defined the first, so every row shipped with a visible scrollbar. */
+.scroll-container::-webkit-scrollbar,
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scroll-container,
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.hero-gradient {
+  background: linear-gradient(
+      to top,
+      rgb(var(--canvas)) 0%,
+      rgb(var(--canvas)) 11%,
+      rgb(var(--canvas) / 0.45) 24%,
+      rgb(var(--canvas) / 0) 46%
+    ),
+    linear-gradient(to right, rgba(10, 10, 12, 0.94) 0%, rgba(10, 10, 12, 0.68) 42%, rgba(10, 10, 12, 0.1) 78%, transparent 100%);
+}
+
+@media (max-width: 767px) {
+  .hero-gradient {
+    background: linear-gradient(
+        to top,
+        rgb(var(--canvas)) 0%,
+        rgb(var(--canvas)) 9%,
+        rgb(var(--canvas) / 0.4) 26%,
+        rgb(var(--canvas) / 0) 52%
+      ),
+      linear-gradient(to right, rgba(10, 10, 12, 0.86) 0%, rgba(10, 10, 12, 0.4) 85%, transparent 100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cube {
+    animation: none;
+    transform: rotateX(-24deg) rotateY(-34deg);
+  }
+
+  .cube-sticker,
+  .fill-ramp,
+  .movie-card {
+    transition: none;
+  }
+}
